@@ -17,6 +17,7 @@ public class Principal {
             ClienteService servicio = new ClienteService();
             ClienteController controlador = new ClienteController(vista, servicio);
             vista.setControlador(controlador);
+            controlador.iniciar();
             vista.setVisible(true);
         });
     }

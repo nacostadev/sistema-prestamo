@@ -1,52 +1,75 @@
 package sistemaprestamo.modelo;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
 /**
- * Entidad Cliente: representa un registro de la tabla clientes.
- * Solo contiene atributos, constructores, getters y setters.
+ * Entidad Cliente: representa un registro de Cliente.Clientes.
+ * Solo contiene atributos, getters y setters. Los atributos terminados en
+ * "Nombre" se llenan al consultar y no se envían a la base de datos.
  */
 public class Cliente {
 
-    private int idCliente;
-    private String nombres;
+    public static final String ESTADO_ACTIVO = "A";
+    public static final String ESTADO_INACTIVO = "I";
+
+    private String codigo;
+    private String tipoDocumentoCodigo;
+    private String tipoDocumentoNombre;
+    private String numeroDocumento;
     private String apellidos;
-    private String dni;
+    private String nombres;
+    private LocalDate fechaNacimiento;
+    private String estadoCivilCodigo;
+    private String estadoCivilNombre;
+    private String direccion;
     private String telefono;
     private String correo;
-    private String direccion;
+    private String condicionLaboralCodigo;
+    private String condicionLaboralNombre;
+    private BigDecimal nivelIngresos;
+    private String nombreConyuge;
+    private String referenciasPersonales;
+    private String observaciones;
+    private String estado;
 
     public Cliente() {
     }
 
-    public Cliente(int idCliente, String nombres, String apellidos, String dni,
-                   String telefono, String correo, String direccion) {
-        this.idCliente = idCliente;
-        this.nombres = nombres;
-        this.apellidos = apellidos;
-        this.dni = dni;
-        this.telefono = telefono;
-        this.correo = correo;
-        this.direccion = direccion;
+    public boolean estaActivo() {
+        return ESTADO_ACTIVO.equals(estado);
     }
 
-    public Cliente(String nombres, String apellidos, String dni,
-                   String telefono, String correo, String direccion) {
-        this(0, nombres, apellidos, dni, telefono, correo, direccion);
+    public String getCodigo() {
+        return codigo;
     }
 
-    public int getIdCliente() {
-        return idCliente;
+    public void setCodigo(String codigo) {
+        this.codigo = codigo;
     }
 
-    public void setIdCliente(int idCliente) {
-        this.idCliente = idCliente;
+    public String getTipoDocumentoCodigo() {
+        return tipoDocumentoCodigo;
     }
 
-    public String getNombres() {
-        return nombres;
+    public void setTipoDocumentoCodigo(String tipoDocumentoCodigo) {
+        this.tipoDocumentoCodigo = tipoDocumentoCodigo;
     }
 
-    public void setNombres(String nombres) {
-        this.nombres = nombres;
+    public String getTipoDocumentoNombre() {
+        return tipoDocumentoNombre;
+    }
+
+    public void setTipoDocumentoNombre(String tipoDocumentoNombre) {
+        this.tipoDocumentoNombre = tipoDocumentoNombre;
+    }
+
+    public String getNumeroDocumento() {
+        return numeroDocumento;
+    }
+
+    public void setNumeroDocumento(String numeroDocumento) {
+        this.numeroDocumento = numeroDocumento;
     }
 
     public String getApellidos() {
@@ -57,12 +80,44 @@ public class Cliente {
         this.apellidos = apellidos;
     }
 
-    public String getDni() {
-        return dni;
+    public String getNombres() {
+        return nombres;
     }
 
-    public void setDni(String dni) {
-        this.dni = dni;
+    public void setNombres(String nombres) {
+        this.nombres = nombres;
+    }
+
+    public LocalDate getFechaNacimiento() {
+        return fechaNacimiento;
+    }
+
+    public void setFechaNacimiento(LocalDate fechaNacimiento) {
+        this.fechaNacimiento = fechaNacimiento;
+    }
+
+    public String getEstadoCivilCodigo() {
+        return estadoCivilCodigo;
+    }
+
+    public void setEstadoCivilCodigo(String estadoCivilCodigo) {
+        this.estadoCivilCodigo = estadoCivilCodigo;
+    }
+
+    public String getEstadoCivilNombre() {
+        return estadoCivilNombre;
+    }
+
+    public void setEstadoCivilNombre(String estadoCivilNombre) {
+        this.estadoCivilNombre = estadoCivilNombre;
+    }
+
+    public String getDireccion() {
+        return direccion;
+    }
+
+    public void setDireccion(String direccion) {
+        this.direccion = direccion;
     }
 
     public String getTelefono() {
@@ -81,16 +136,64 @@ public class Cliente {
         this.correo = correo;
     }
 
-    public String getDireccion() {
-        return direccion;
+    public String getCondicionLaboralCodigo() {
+        return condicionLaboralCodigo;
     }
 
-    public void setDireccion(String direccion) {
-        this.direccion = direccion;
+    public void setCondicionLaboralCodigo(String condicionLaboralCodigo) {
+        this.condicionLaboralCodigo = condicionLaboralCodigo;
+    }
+
+    public String getCondicionLaboralNombre() {
+        return condicionLaboralNombre;
+    }
+
+    public void setCondicionLaboralNombre(String condicionLaboralNombre) {
+        this.condicionLaboralNombre = condicionLaboralNombre;
+    }
+
+    public BigDecimal getNivelIngresos() {
+        return nivelIngresos;
+    }
+
+    public void setNivelIngresos(BigDecimal nivelIngresos) {
+        this.nivelIngresos = nivelIngresos;
+    }
+
+    public String getNombreConyuge() {
+        return nombreConyuge;
+    }
+
+    public void setNombreConyuge(String nombreConyuge) {
+        this.nombreConyuge = nombreConyuge;
+    }
+
+    public String getReferenciasPersonales() {
+        return referenciasPersonales;
+    }
+
+    public void setReferenciasPersonales(String referenciasPersonales) {
+        this.referenciasPersonales = referenciasPersonales;
+    }
+
+    public String getObservaciones() {
+        return observaciones;
+    }
+
+    public void setObservaciones(String observaciones) {
+        this.observaciones = observaciones;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
     }
 
     @Override
     public String toString() {
-        return idCliente + " - " + nombres + " " + apellidos + " (DNI: " + dni + ")";
+        return codigo + " - " + nombres + " " + apellidos + " (" + numeroDocumento + ")";
     }
 }

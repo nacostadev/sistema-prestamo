@@ -5,8 +5,10 @@ import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.List;
 import javax.swing.JOptionPane;
+import sistemaprestamo.modelo.CatalogosCliente;
 import sistemaprestamo.modelo.Cliente;
 import sistemaprestamo.modelo.ClienteService;
+import sistemaprestamo.modelo.ReglaNegocioException;
 import sistemaprestamo.vista.FrmCliente;
 
 /**
@@ -18,7 +20,7 @@ public class ClienteController implements ActionListener {
 
     public static final String ACCION_REGISTRAR = "REGISTRAR";
     public static final String ACCION_ACTUALIZAR = "ACTUALIZAR";
-    public static final String ACCION_ELIMINAR = "ELIMINAR";
+    public static final String ACCION_DESACTIVAR = "DESACTIVAR";
     public static final String ACCION_LISTAR = "LISTAR";
     public static final String ACCION_LIMPIAR = "LIMPIAR";
 
@@ -30,6 +32,18 @@ public class ClienteController implements ActionListener {
         this.servicio = servicio;
     }
 
+    /** Carga los combos y muestra la lista de clientes al abrir el módulo (HU-01 CA-01). */
+    public void iniciar() {
+        try {
+            CatalogosCliente catalogos = servicio.cargarCatalogos();
+            vista.cargarCatalogos(catalogos);
+        } catch (SQLException excepcion) {
+            vista.mostrarMensaje("Error al cargar los catálogos: " + excepcion.getMessage(),
+                    "Error de base de datos", JOptionPane.ERROR_MESSAGE);
+        }
+        listar();
+    }
+
     @Override
     public void actionPerformed(ActionEvent evento) {
         switch (evento.getActionCommand()) {
@@ -39,8 +53,8 @@ public class ClienteController implements ActionListener {
             case ACCION_ACTUALIZAR:
                 actualizar();
                 break;
-            case ACCION_ELIMINAR:
-                eliminar();
+            case ACCION_DESACTIVAR:
+                desactivar();
                 break;
             case ACCION_LISTAR:
                 listar();
@@ -56,15 +70,15 @@ public class ClienteController implements ActionListener {
     public void registrar() {
         try {
             Cliente cliente = vista.obtenerClienteFormulario();
-            servicio.registrarCliente(cliente);
-            vista.mostrarMensaje("Cliente registrado correctamente. ID: " + cliente.getIdCliente(),
+            String codigo = servicio.registrarCliente(cliente);
+            vista.mostrarMensaje("Cliente registrado correctamente. Código: " + codigo,
                     "Registro", JOptionPane.INFORMATION_MESSAGE);
             vista.limpiarFormulario();
             listar();
-        } catch (IllegalArgumentException excepcion) {
+        } catch (IllegalArgumentException | ReglaNegocioException excepcion) {
             vista.mostrarMensaje(excepcion.getMessage(), "Validación", JOptionPane.WARNING_MESSAGE);
         } catch (SQLException excepcion) {
-            vista.mostrarMensaje("Error al registrar el cliente: " + excepcion.getMessage(),
+            vista.mostrarMensaje("No se pudo registrar el cliente: " + excepcion.getMessage(),
                     "Error de base de datos", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -73,46 +87,49 @@ public class ClienteController implements ActionListener {
         try {
             Cliente cliente = vista.obtenerClienteFormulario();
             servicio.actualizarCliente(cliente);
-            vista.mostrarMensaje("Cliente actualizado correctamente.",
+            vista.mostrarMensaje("La información del cliente fue actualizada correctamente.",
                     "Actualización", JOptionPane.INFORMATION_MESSAGE);
             vista.limpiarFormulario();
             listar();
-        } catch (IllegalArgumentException excepcion) {
+        } catch (IllegalArgumentException | ReglaNegocioException excepcion) {
             vista.mostrarMensaje(excepcion.getMessage(), "Validación", JOptionPane.WARNING_MESSAGE);
         } catch (SQLException excepcion) {
-            vista.mostrarMensaje("Error al actualizar el cliente: " + excepcion.getMessage(),
+            vista.mostrarMensaje("No se pudo actualizar el cliente: " + excepcion.getMessage(),
                     "Error de base de datos", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    public void eliminar() {
+    public void desactivar() {
         try {
-            Cliente cliente = vista.obtenerClienteFormulario();
+            String codigo = vista.obtenerCodigoFormulario();
+            if (codigo.isEmpty()) {
+                throw new IllegalArgumentException("Seleccione un cliente de la lista antes de desactivarlo.");
+            }
             int confirmacion = JOptionPane.showConfirmDialog(
                     vista,
-                    "¿Desea eliminar al cliente " + cliente.getNombres() + " " + cliente.getApellidos() + "?",
-                    "Confirmar eliminación",
+                    "¿Desea desactivar al cliente " + vista.obtenerNombreCompletoFormulario() + "?",
+                    "Confirmar desactivación",
                     JOptionPane.YES_NO_OPTION,
                     JOptionPane.QUESTION_MESSAGE);
             if (confirmacion != JOptionPane.YES_OPTION) {
                 return;
             }
-            servicio.eliminarCliente(cliente.getIdCliente());
-            vista.mostrarMensaje("Cliente eliminado correctamente.",
-                    "Eliminación", JOptionPane.INFORMATION_MESSAGE);
+            servicio.desactivarCliente(codigo);
+            vista.mostrarMensaje("Cliente desactivado correctamente.",
+                    "Desactivación", JOptionPane.INFORMATION_MESSAGE);
             vista.limpiarFormulario();
             listar();
-        } catch (IllegalArgumentException excepcion) {
+        } catch (IllegalArgumentException | ReglaNegocioException excepcion) {
             vista.mostrarMensaje(excepcion.getMessage(), "Validación", JOptionPane.WARNING_MESSAGE);
         } catch (SQLException excepcion) {
-            vista.mostrarMensaje("Error al eliminar el cliente: " + excepcion.getMessage(),
+            vista.mostrarMensaje("No se pudo desactivar el cliente: " + excepcion.getMessage(),
                     "Error de base de datos", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     public void listar() {
         try {
-            List<Cliente> clientes = servicio.listarClientes();
+            List<Cliente> clientes = servicio.listarClientes(vista.obtenerBusqueda());
             vista.mostrarClientes(clientes);
         } catch (SQLException excepcion) {
             vista.mostrarMensaje("Error al consultar los clientes: " + excepcion.getMessage(),
