@@ -175,17 +175,6 @@ CREATE TABLE Cliente.EstadosCiviles
 ON Registros;
 GO
 
-CREATE TABLE Cliente.CondicionesLaborales
-(
-    CondicionesLaboralesCodigo NCHAR(4) NOT NULL,
-    CondicionesLaboralesNombre NVARCHAR(30) NOT NULL,
-
-    CONSTRAINT CondicionesLaboralesPK PRIMARY KEY (CondicionesLaboralesCodigo),
-    CONSTRAINT CondicionesLaboralesNombreUQ UNIQUE (CondicionesLaboralesNombre)
-)
-ON Registros;
-GO
-
 -- RN-03: campos obligatorios.
 -- RN-04: campos opcionales (cónyuge, referencias personales y observaciones).
 -- Estado A/I: desactivación del cliente (no se elimina físicamente).
@@ -201,7 +190,7 @@ CREATE TABLE Cliente.Clientes
     ClientesDireccion               NVARCHAR(150) NOT NULL,
     ClientesTelefono                NCHAR(9) NOT NULL,
     ClientesCorreo                  NVARCHAR(100) NOT NULL,
-    CondicionesLaboralesCodigo      NCHAR(4) NOT NULL,
+    ClientesCondicionLaboral        NVARCHAR(50) NOT NULL,
     ClientesNivelIngresos           DECIMAL(18,2) NOT NULL,
     ClientesNombreConyuge           NVARCHAR(200) NULL,
     ClientesReferenciasPersonales   NVARCHAR(255) NULL,
@@ -213,8 +202,6 @@ CREATE TABLE Cliente.Clientes
         REFERENCES Cliente.TiposDocumento(TiposDocumentoCodigo),
     CONSTRAINT ClientesEstadosCivilesFK FOREIGN KEY (EstadosCivilesCodigo)
         REFERENCES Cliente.EstadosCiviles(EstadosCivilesCodigo),
-    CONSTRAINT ClientesCondicionesLaboralesFK FOREIGN KEY (CondicionesLaboralesCodigo)
-        REFERENCES Cliente.CondicionesLaborales(CondicionesLaboralesCodigo),
     CONSTRAINT ClientesDocumentoUQ UNIQUE (ClientesNumeroDocumento),
     CONSTRAINT ClientesEstadoCK CHECK (ClientesEstado IN ('A', 'I')),
     CONSTRAINT ClientesNivelIngresosCK CHECK (ClientesNivelIngresos >= 0)
@@ -480,8 +467,7 @@ BEGIN
         c.ClientesDireccion,
         c.ClientesTelefono,
         c.ClientesCorreo,
-        c.CondicionesLaboralesCodigo,
-        cl.CondicionesLaboralesNombre,
+        c.ClientesCondicionLaboral,
         c.ClientesNivelIngresos,
         c.ClientesNombreConyuge,
         c.ClientesReferenciasPersonales,
@@ -492,8 +478,6 @@ BEGIN
         ON td.TiposDocumentoCodigo = c.TiposDocumentoCodigo
     INNER JOIN Cliente.EstadosCiviles AS ec
         ON ec.EstadosCivilesCodigo = c.EstadosCivilesCodigo
-    INNER JOIN Cliente.CondicionesLaborales AS cl
-        ON cl.CondicionesLaboralesCodigo = c.CondicionesLaboralesCodigo
     WHERE (@ClientesCodigo IS NULL OR c.ClientesCodigo = @ClientesCodigo)
       AND (@Busqueda IS NULL
            OR c.ClientesNumeroDocumento LIKE N'%' + @Busqueda + N'%'
@@ -515,7 +499,7 @@ CREATE PROCEDURE Cliente.sp_Cliente_Registrar
     @Direccion                   NVARCHAR(150),
     @Telefono                    NCHAR(9),
     @Correo                      NVARCHAR(100),
-    @CondicionesLaboralesCodigo  NCHAR(4),
+    @CondicionLaboral            NVARCHAR(50),
     @NivelIngresos               DECIMAL(18,2),
     @NombreConyuge               NVARCHAR(200) = NULL,
     @ReferenciasPersonales       NVARCHAR(255) = NULL,
@@ -536,14 +520,14 @@ BEGIN
         (ClientesCodigo, TiposDocumentoCodigo, ClientesNumeroDocumento,
          ClientesApellidos, ClientesNombres, ClientesFechaNacimiento,
          EstadosCivilesCodigo, ClientesDireccion, ClientesTelefono,
-         ClientesCorreo, CondicionesLaboralesCodigo, ClientesNivelIngresos,
+         ClientesCorreo, ClientesCondicionLaboral, ClientesNivelIngresos,
          ClientesNombreConyuge, ClientesReferenciasPersonales,
          ClientesObservaciones)
     VALUES
         (@ClientesCodigo, @TiposDocumentoCodigo, @NumeroDocumento,
          @Apellidos, @Nombres, @FechaNacimiento,
          @EstadosCivilesCodigo, @Direccion, @Telefono,
-         @Correo, @CondicionesLaboralesCodigo, @NivelIngresos,
+         @Correo, @CondicionLaboral, @NivelIngresos,
          @NombreConyuge, @ReferenciasPersonales,
          @Observaciones);
 END
@@ -562,7 +546,7 @@ CREATE PROCEDURE Cliente.sp_Cliente_Actualizar
     @Direccion                   NVARCHAR(150),
     @Telefono                    NCHAR(9),
     @Correo                      NVARCHAR(100),
-    @CondicionesLaboralesCodigo  NCHAR(4),
+    @CondicionLaboral            NVARCHAR(50),
     @NivelIngresos               DECIMAL(18,2),
     @NombreConyuge               NVARCHAR(200) = NULL,
     @ReferenciasPersonales       NVARCHAR(255) = NULL,
@@ -581,7 +565,7 @@ BEGIN
         ClientesDireccion             = @Direccion,
         ClientesTelefono              = @Telefono,
         ClientesCorreo                = @Correo,
-        CondicionesLaboralesCodigo    = @CondicionesLaboralesCodigo,
+        ClientesCondicionLaboral      = @CondicionLaboral,
         ClientesNivelIngresos         = @NivelIngresos,
         ClientesNombreConyuge         = @NombreConyuge,
         ClientesReferenciasPersonales = @ReferenciasPersonales,
@@ -672,52 +656,41 @@ VALUES
 GO
 
 
--- Valores supuestos: las HU no definen la lista de condiciones laborales
-INSERT INTO Cliente.CondicionesLaborales
-    (CondicionesLaboralesCodigo, CondicionesLaboralesNombre)
-VALUES
-    ('CL01', N'Dependiente'),
-    ('CL02', N'Independiente'),
-    ('CL03', N'Desempleado'),
-    ('CL04', N'Jubilado');
-GO
-
-
 INSERT INTO Cliente.Clientes
     (ClientesCodigo, TiposDocumentoCodigo, ClientesNumeroDocumento,
      ClientesApellidos, ClientesNombres, ClientesFechaNacimiento,
      EstadosCivilesCodigo, ClientesDireccion, ClientesTelefono,
-     ClientesCorreo, CondicionesLaboralesCodigo, ClientesNivelIngresos,
+     ClientesCorreo, ClientesCondicionLaboral, ClientesNivelIngresos,
      ClientesNombreConyuge, ClientesReferenciasPersonales)
 VALUES
     ('CL01', 'TD01', N'45871236',
      N'Ramírez Torres', N'Juan Carlos', '1985-06-15',
      'EC02', N'Av. Perú 123, Trujillo', '987654321',
-     N'jramirez@example.com', 'CL01', 2500.00,
+     N'jramirez@example.com', N'Dependiente', 2500.00,
      N'Rosa Elena Flores Díaz', N'Pedro Ramírez Sosa, Carla Torres Vega'),
 
     ('CL02', 'TD01', N'72943815',
      N'Gómez López', N'María Fernanda', '1987-08-20',
      'EC01', N'Calle Lima 456, Trujillo', '912345678',
-     N'mgomez@example.com', 'CL02', 1800.00,
+     N'mgomez@example.com', N'Independiente', 1800.00,
      NULL, N'Luis Gómez Peña'),
 
     ('CL03', 'TD01', N'60391842',
      N'Vásquez Quispe', N'Luis Alberto', '1989-03-11',
      'EC05', N'Jr. Zela 789, Trujillo', '934561278',
-     N'lvasquez@example.com', 'CL01', 3200.00,
+     N'lvasquez@example.com', N'Dependiente', 3200.00,
      NULL, N'Mónica Quispe Ruiz'),
 
     ('CL04', 'TD01', N'73928501',
      N'Sánchez Reyes', N'Ana Lucía', '1990-07-23',
      'EC02', N'Urb. Las Palmas, Trujillo', '976341289',
-     N'asanchez@example.com', 'CL02', 2100.00,
+     N'asanchez@example.com', N'Independiente', 2100.00,
      N'Miguel Ángel Ortiz Salas', N'Jorge Sánchez Vidal'),
 
     ('CL05', 'TD03', N'000234567',
      N'Torres Morales', N'José Miguel', '1992-04-30',
      'EC01', N'Av. América Sur 100, Trujillo', '965832147',
-     N'jtorres@example.com', 'CL03', 1500.00,
+     N'jtorres@example.com', N'Desempleado', 1500.00,
      NULL, NULL);
 GO
 

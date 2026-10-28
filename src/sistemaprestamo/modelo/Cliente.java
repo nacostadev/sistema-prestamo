@@ -32,12 +32,6 @@ public class Cliente {
             new ItemCatalogo("EC03", "Divorciado(a)"),
             new ItemCatalogo("EC04", "Viudo(a)"),
             new ItemCatalogo("EC05", "Conviviente"));
-    /** Valores supuestos: la HU-01 no define la lista de condiciones laborales. */
-    public static final List<ItemCatalogo> CONDICIONES_LABORALES = List.of(
-            new ItemCatalogo("CL01", "Dependiente"),
-            new ItemCatalogo("CL02", "Independiente"),
-            new ItemCatalogo("CL03", "Desempleado"),
-            new ItemCatalogo("CL04", "Jubilado"));
 
     /** HU-01 RN-01: edad mínima para ser cliente. */
     private static final int EDAD_MINIMA = 18;
@@ -58,8 +52,7 @@ public class Cliente {
     private String direccion;
     private String telefono;
     private String correo;
-    private String condicionLaboralCodigo;
-    private String condicionLaboralNombre;
+    private String condicionLaboral;
     private BigDecimal nivelIngresos;
     private String nombreConyuge;
     private String referenciasPersonales;
@@ -169,20 +162,12 @@ public class Cliente {
         this.correo = correo;
     }
 
-    public String getCondicionLaboralCodigo() {
-        return condicionLaboralCodigo;
+    public String getCondicionLaboral() {
+        return condicionLaboral;
     }
 
-    public void setCondicionLaboralCodigo(String condicionLaboralCodigo) {
-        this.condicionLaboralCodigo = condicionLaboralCodigo;
-    }
-
-    public String getCondicionLaboralNombre() {
-        return condicionLaboralNombre;
-    }
-
-    public void setCondicionLaboralNombre(String condicionLaboralNombre) {
-        this.condicionLaboralNombre = condicionLaboralNombre;
+    public void setCondicionLaboral(String condicionLaboral) {
+        this.condicionLaboral = condicionLaboral;
     }
 
     public BigDecimal getNivelIngresos() {
@@ -231,6 +216,8 @@ public class Cliente {
     }
 
     // REGLAS DE NEGOCIO
+    // Los métodos auxiliares sin "private" tienen visibilidad de paquete para poder
+    // probarlos de forma individual en ClienteTest.
 
     /**
      * HU-01 RN-01, RN-03 y CA-05: verifica los campos obligatorios y sus
@@ -252,6 +239,7 @@ public class Cliente {
         }
         validarMayorDeEdad();
         validarLongitud(direccion, "dirección", 150);
+        validarLongitud(condicionLaboral, "condición laboral", 50);
         if (!telefono.matches(EXPRESION_TELEFONO)) {
             throw new IllegalArgumentException("El teléfono debe contener exactamente 9 dígitos.");
         }
@@ -301,7 +289,7 @@ public class Cliente {
         }
     }
 
-    private String obtenerCamposObligatoriosFaltantes() {
+    String obtenerCamposObligatoriosFaltantes() {
         List<String> faltantes = new java.util.ArrayList<>();
         agregarSiVacio(faltantes, tipoDocumentoCodigo, "tipo de documento");
         agregarSiVacio(faltantes, numeroDocumento, "número de documento");
@@ -314,7 +302,7 @@ public class Cliente {
         agregarSiVacio(faltantes, direccion, "dirección");
         agregarSiVacio(faltantes, telefono, "teléfono");
         agregarSiVacio(faltantes, correo, "correo electrónico");
-        agregarSiVacio(faltantes, condicionLaboralCodigo, "condición laboral");
+        agregarSiVacio(faltantes, condicionLaboral, "condición laboral");
         if (nivelIngresos == null) {
             faltantes.add("nivel de ingresos");
         }
@@ -327,26 +315,27 @@ public class Cliente {
         }
     }
 
-    private void quitarEspacios() {
+    void quitarEspacios() {
         numeroDocumento = numeroDocumento.trim();
         nombres = nombres.trim();
         apellidos = apellidos.trim();
         direccion = direccion.trim();
         telefono = telefono.trim();
         correo = correo.trim();
+        condicionLaboral = condicionLaboral.trim();
         nombreConyuge = nombreConyuge == null ? null : nombreConyuge.trim();
         referenciasPersonales = referenciasPersonales == null ? null : referenciasPersonales.trim();
         observaciones = observaciones == null ? null : observaciones.trim();
     }
 
     /** HU-01 RN-01: el cliente debe ser mayor de edad (18 años cumplidos). */
-    private void validarMayorDeEdad() {
+    void validarMayorDeEdad() {
         if (Period.between(fechaNacimiento, LocalDate.now()).getYears() < EDAD_MINIMA) {
             throw new IllegalArgumentException("El cliente debe ser mayor de edad (18 años o más).");
         }
     }
 
-    private void validarDocumento() {
+    void validarDocumento() {
         if (TIPO_DOCUMENTO_DNI.equals(tipoDocumentoCodigo)) {
             if (!numeroDocumento.matches(EXPRESION_DNI)) {
                 throw new IllegalArgumentException("El DNI debe contener exactamente 8 dígitos.");
@@ -358,7 +347,7 @@ public class Cliente {
         }
     }
 
-    private void validarLongitud(String valor, String campo, int maximo) {
+    void validarLongitud(String valor, String campo, int maximo) {
         if (valor != null && valor.length() > maximo) {
             throw new IllegalArgumentException(
                     "El campo '" + campo + "' no puede superar los " + maximo + " caracteres.");

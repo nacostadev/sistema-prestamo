@@ -161,7 +161,7 @@ public class ClienteDAO {
         sentencia.setString(i++, cliente.getDireccion());
         sentencia.setString(i++, cliente.getTelefono());
         sentencia.setString(i++, cliente.getCorreo());
-        sentencia.setString(i++, cliente.getCondicionLaboralCodigo());
+        sentencia.setString(i++, cliente.getCondicionLaboral());
         sentencia.setBigDecimal(i++, cliente.getNivelIngresos());
         asignarOpcional(sentencia, i++, cliente.getNombreConyuge());
         asignarOpcional(sentencia, i++, cliente.getReferenciasPersonales());
@@ -191,8 +191,7 @@ public class ClienteDAO {
         cliente.setDireccion(resultado.getString("ClientesDireccion"));
         cliente.setTelefono(resultado.getString("ClientesTelefono").trim());
         cliente.setCorreo(resultado.getString("ClientesCorreo"));
-        cliente.setCondicionLaboralCodigo(resultado.getString("CondicionesLaboralesCodigo").trim());
-        cliente.setCondicionLaboralNombre(resultado.getString("CondicionesLaboralesNombre"));
+        cliente.setCondicionLaboral(resultado.getString("ClientesCondicionLaboral"));
         cliente.setNivelIngresos(resultado.getBigDecimal("ClientesNivelIngresos"));
         cliente.setNombreConyuge(resultado.getString("ClientesNombreConyuge"));
         cliente.setReferenciasPersonales(resultado.getString("ClientesReferenciasPersonales"));

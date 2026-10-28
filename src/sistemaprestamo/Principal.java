@@ -2,7 +2,7 @@ package sistemaprestamo;
 
 import javax.swing.SwingUtilities;
 import sistemaprestamo.controlador.ClienteController;
-import sistemaprestamo.vista.FrmCliente;
+import sistemaprestamo.vista.FrmClientes;
 
 /**
  * Punto de entrada de la aplicación de escritorio.
@@ -12,7 +12,7 @@ public class Principal {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            FrmCliente vista = new FrmCliente();
+            FrmClientes vista = new FrmClientes();
             ClienteController controlador = new ClienteController(vista);
             vista.setControlador(controlador);
             controlador.iniciar();

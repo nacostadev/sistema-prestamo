@@ -1,13 +1,11 @@
 package sistemaprestamo.controlador;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.List;
 import javax.swing.JOptionPane;
 import sistemaprestamo.modelo.Cliente;
 import sistemaprestamo.persistencia.ClienteDAO;
-import sistemaprestamo.vista.FrmCliente;
+import sistemaprestamo.vista.FrmClientes;
 
 /**
  * Controlador de la ventana de clientes (HU-01).
@@ -15,49 +13,18 @@ import sistemaprestamo.vista.FrmCliente;
  * a la clase Cliente que aplique sus reglas de negocio y guarda. No contiene
  * reglas, cálculos ni consultas SQL.
  */
-public class ClienteController implements ActionListener {
+public class ClienteController {
 
-    public static final String ACCION_REGISTRAR = "REGISTRAR";
-    public static final String ACCION_ACTUALIZAR = "ACTUALIZAR";
-    public static final String ACCION_DESACTIVAR = "DESACTIVAR";
-    public static final String ACCION_LISTAR = "LISTAR";
-    public static final String ACCION_LIMPIAR = "LIMPIAR";
-
-    private final FrmCliente vista;
+    private final FrmClientes vista;
     private final ClienteDAO clienteDAO = new ClienteDAO();
 
-    public ClienteController(FrmCliente vista) {
+    public ClienteController(FrmClientes vista) {
         this.vista = vista;
     }
 
-    /** Carga los combos y muestra la lista de clientes al abrir el módulo (HU-01 CA-01). */
+    /** Muestra la lista de clientes al abrir el módulo (HU-01 CA-01). */
     public void iniciar() {
-        vista.cargarCatalogos(Cliente.TIPOS_DOCUMENTO, Cliente.ESTADOS_CIVILES,
-                Cliente.CONDICIONES_LABORALES);
         listar();
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent evento) {
-        switch (evento.getActionCommand()) {
-            case ACCION_REGISTRAR:
-                registrar();
-                break;
-            case ACCION_ACTUALIZAR:
-                actualizar();
-                break;
-            case ACCION_DESACTIVAR:
-                desactivar();
-                break;
-            case ACCION_LISTAR:
-                listar();
-                break;
-            case ACCION_LIMPIAR:
-                vista.limpiarFormulario();
-                break;
-            default:
-                break;
-        }
     }
 
     /** HU-01 CA-02, CA-03, CA-05: valida el cliente y su documento y lo registra. */

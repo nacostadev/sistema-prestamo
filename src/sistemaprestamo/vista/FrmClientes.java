@@ -3,17 +3,54 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package sistemaprestamo.vista;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import javax.swing.JComboBox;
+import javax.swing.JOptionPane;
+import javax.swing.ListSelectionModel;
+import javax.swing.table.DefaultTableModel;
+import sistemaprestamo.controlador.ClienteController;
+import sistemaprestamo.modelo.Cliente;
+import sistemaprestamo.modelo.ItemCatalogo;
+
 /**
- *
- * @author ACER
+ * Ventana de gestión de clientes (HU-01). Solo muestra y recoge datos: las
+ * reglas de negocio están en la clase Cliente y el flujo en ClienteController.
+ * Los combos de tipo de documento y estado civil tienen la opción
+ * "&lt;&lt;Seleccionar&gt;&gt;" en la posición 0 y, después, las opciones en el mismo
+ * orden que Cliente.TIPOS_DOCUMENTO y Cliente.ESTADOS_CIVILES.
  */
 public class FrmClientes extends javax.swing.JFrame {
-    
-    /**
-     * Creates new form FrmClientes
-     */
+
+    private static final String[] COLUMNAS = {"Código", "Documento", "Apellidos", "Nombres",
+        "Teléfono", "Correo", "Condición laboral", "Estado"};
+
+    private ClienteController controlador;
+    private final DefaultTableModel modeloTabla;
+    private List<Cliente> clientesMostrados = new ArrayList<>();
+
     public FrmClientes() {
         initComponents();
+        modeloTabla = new DefaultTableModel(COLUMNAS, 0) {
+            @Override
+            public boolean isCellEditable(int fila, int columna) {
+                return false;
+            }
+        };
+        tblClientes.setModel(modeloTabla);
+        tblClientes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        txtCodigo.setEditable(false); // lo genera la base de datos
+        cboEstado.setEnabled(false);  // cambia solo con "Desactivar"
+        setLocationRelativeTo(null);
+    }
+
+    public void setControlador(ClienteController controlador) {
+        this.controlador = controlador;
     }
 
     /**
@@ -31,47 +68,47 @@ public class FrmClientes extends javax.swing.JFrame {
         jLabel17 = new javax.swing.JLabel();
         jPanel8 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox<>();
+        cboTipoDocumento = new javax.swing.JComboBox<>();
         jLabel2 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        txtCodigo = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
-        jTextField2 = new javax.swing.JTextField();
-        jTextField3 = new javax.swing.JTextField();
-        jTextField4 = new javax.swing.JTextField();
-        jComboBox2 = new javax.swing.JComboBox<>();
-        jDateChooser1 = new com.toedter.calendar.JDateChooser();
-        jTextField5 = new javax.swing.JTextField();
-        jTextField6 = new javax.swing.JTextField();
+        txtTelefono = new javax.swing.JTextField();
+        txtNumeroDocumento = new javax.swing.JTextField();
+        txtApellidos = new javax.swing.JTextField();
+        cboEstadoCivil = new javax.swing.JComboBox<>();
+        dcFechaNacimiento = new com.toedter.calendar.JDateChooser();
+        txtNivelIngresos = new javax.swing.JTextField();
+        txtDireccion = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
-        btnRegistrar1 = new javax.swing.JButton();
-        btnCancelar1 = new javax.swing.JButton();
-        btnRegistrar = new javax.swing.JButton();
+        btnGuardar = new javax.swing.JButton();
+        btnLimpiar = new javax.swing.JButton();
+        btnNuevo = new javax.swing.JButton();
         jLabel12 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
-        jTextField8 = new javax.swing.JTextField();
+        txtObservaciones = new javax.swing.JTextArea();
+        txtNombres = new javax.swing.JTextField();
         jLabel14 = new javax.swing.JLabel();
         jLabel15 = new javax.swing.JLabel();
-        jTextField9 = new javax.swing.JTextField();
+        txtCorreo = new javax.swing.JTextField();
         jLabel16 = new javax.swing.JLabel();
-        jTextField10 = new javax.swing.JTextField();
+        txtCondicionLaboral = new javax.swing.JTextField();
         jLabel18 = new javax.swing.JLabel();
-        jComboBox3 = new javax.swing.JComboBox<>();
+        cboEstado = new javax.swing.JComboBox<>();
         jPanel2 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        tblClientes = new javax.swing.JTable();
         jPanel3 = new javax.swing.JPanel();
         jLabel10 = new javax.swing.JLabel();
         jLabel11 = new javax.swing.JLabel();
-        btnCancelar = new javax.swing.JButton();
-        btnCancelar2 = new javax.swing.JButton();
-        jTextField7 = new javax.swing.JTextField();
-        btnCancelar3 = new javax.swing.JButton();
+        btnDesactivar = new javax.swing.JButton();
+        btnBuscar = new javax.swing.JButton();
+        txtBusqueda = new javax.swing.JTextField();
+        btnEditar = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -86,7 +123,7 @@ public class FrmClientes extends javax.swing.JFrame {
 
         jLabel13.setFont(new java.awt.Font("Segoe UI", 0, 11)); // NOI18N
         jLabel13.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel13.setText("Ingrese la información del préstamo para generar el cronograma de pagos");
+        jLabel13.setText("Registre, consulte, actualice o desactive la información de los clientes");
         panelHeader.add(jLabel13, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 50, -1, -1));
 
         jLabel17.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
@@ -103,28 +140,28 @@ public class FrmClientes extends javax.swing.JFrame {
         jLabel1.setText("Fecha de nacimiento");
         jPanel8.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(1040, 10, 150, 20));
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "<<Seleccionar>>", "DNI", "Pasaporte", "Carné de Extranjería" }));
-        jComboBox1.setToolTipText("");
-        jPanel8.add(jComboBox1, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 30, 280, -1));
+        cboTipoDocumento.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "<<Seleccionar>>", "DNI", "Pasaporte", "Carné de Extranjería" }));
+        cboTipoDocumento.setToolTipText("");
+        jPanel8.add(cboTipoDocumento, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 30, 280, -1));
 
         jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel2.setText("Condición laboral");
         jPanel8.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 130, -1, -1));
-        jPanel8.add(jTextField1, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 30, 245, -1));
+        jPanel8.add(txtCodigo, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 30, 245, -1));
 
         jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel3.setText("Observaciones");
         jPanel8.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 200, -1, -1));
-        jPanel8.add(jTextField2, new org.netbeans.lib.awtextra.AbsoluteConstraints(700, 90, 270, -1));
-        jPanel8.add(jTextField3, new org.netbeans.lib.awtextra.AbsoluteConstraints(700, 30, 271, -1));
-        jPanel8.add(jTextField4, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 90, 271, -1));
+        jPanel8.add(txtTelefono, new org.netbeans.lib.awtextra.AbsoluteConstraints(700, 90, 270, -1));
+        jPanel8.add(txtNumeroDocumento, new org.netbeans.lib.awtextra.AbsoluteConstraints(700, 30, 271, -1));
+        jPanel8.add(txtApellidos, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 90, 271, -1));
 
-        jComboBox2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "<<Seleccionar>>", "Soltero(a)", "Casado(a)", "Divorciado(a)", "Viudo(a)", "Conviviente" }));
-        jComboBox2.addActionListener(this::jComboBox2ActionPerformed);
-        jPanel8.add(jComboBox2, new org.netbeans.lib.awtextra.AbsoluteConstraints(1040, 90, 271, -1));
-        jPanel8.add(jDateChooser1, new org.netbeans.lib.awtextra.AbsoluteConstraints(1040, 30, 271, -1));
-        jPanel8.add(jTextField5, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 150, 271, -1));
-        jPanel8.add(jTextField6, new org.netbeans.lib.awtextra.AbsoluteConstraints(1400, 30, 271, -1));
+        cboEstadoCivil.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "<<Seleccionar>>", "Soltero(a)", "Casado(a)", "Divorciado(a)", "Viudo(a)", "Conviviente" }));
+        cboEstadoCivil.addActionListener(this::cboEstadoCivilActionPerformed);
+        jPanel8.add(cboEstadoCivil, new org.netbeans.lib.awtextra.AbsoluteConstraints(1040, 90, 271, -1));
+        jPanel8.add(dcFechaNacimiento, new org.netbeans.lib.awtextra.AbsoluteConstraints(1040, 30, 271, -1));
+        jPanel8.add(txtNivelIngresos, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 150, 271, -1));
+        jPanel8.add(txtDireccion, new org.netbeans.lib.awtextra.AbsoluteConstraints(1400, 30, 271, -1));
 
         jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel4.setText("Código");
@@ -150,36 +187,36 @@ public class FrmClientes extends javax.swing.JFrame {
         jLabel9.setText("Correo electrónico");
         jPanel8.add(jLabel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(1400, 70, -1, -1));
 
-        btnRegistrar1.setBackground(new java.awt.Color(0, 153, 102));
-        btnRegistrar1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnRegistrar1.setForeground(new java.awt.Color(255, 255, 255));
-        btnRegistrar1.setText("Guardar");
-        btnRegistrar1.addActionListener(this::btnRegistrar1ActionPerformed);
-        jPanel8.add(btnRegistrar1, new org.netbeans.lib.awtextra.AbsoluteConstraints(1350, 240, 150, 40));
+        btnGuardar.setBackground(new java.awt.Color(0, 153, 102));
+        btnGuardar.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnGuardar.setForeground(new java.awt.Color(255, 255, 255));
+        btnGuardar.setText("Guardar");
+        btnGuardar.addActionListener(this::btnGuardarActionPerformed);
+        jPanel8.add(btnGuardar, new org.netbeans.lib.awtextra.AbsoluteConstraints(1350, 240, 150, 40));
 
-        btnCancelar1.setForeground(new java.awt.Color(13, 71, 161));
-        btnCancelar1.setText("Limpiar");
-        btnCancelar1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(13, 71, 161)));
-        btnCancelar1.addActionListener(this::btnCancelar1ActionPerformed);
-        jPanel8.add(btnCancelar1, new org.netbeans.lib.awtextra.AbsoluteConstraints(1550, 240, 100, 40));
+        btnLimpiar.setForeground(new java.awt.Color(13, 71, 161));
+        btnLimpiar.setText("Limpiar");
+        btnLimpiar.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(13, 71, 161)));
+        btnLimpiar.addActionListener(this::btnLimpiarActionPerformed);
+        jPanel8.add(btnLimpiar, new org.netbeans.lib.awtextra.AbsoluteConstraints(1550, 240, 100, 40));
 
-        btnRegistrar.setBackground(new java.awt.Color(13, 71, 161));
-        btnRegistrar.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnRegistrar.setForeground(new java.awt.Color(255, 255, 255));
-        btnRegistrar.setText("Nuevo");
-        btnRegistrar.addActionListener(this::btnRegistrarActionPerformed);
-        jPanel8.add(btnRegistrar, new org.netbeans.lib.awtextra.AbsoluteConstraints(1150, 240, 150, 40));
+        btnNuevo.setBackground(new java.awt.Color(13, 71, 161));
+        btnNuevo.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnNuevo.setForeground(new java.awt.Color(255, 255, 255));
+        btnNuevo.setText("Nuevo");
+        btnNuevo.addActionListener(this::btnNuevoActionPerformed);
+        jPanel8.add(btnNuevo, new org.netbeans.lib.awtextra.AbsoluteConstraints(1150, 240, 150, 40));
 
         jLabel12.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel12.setText("Teléfono");
         jPanel8.add(jLabel12, new org.netbeans.lib.awtextra.AbsoluteConstraints(700, 70, -1, -1));
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane2.setViewportView(jTextArea1);
+        txtObservaciones.setColumns(20);
+        txtObservaciones.setRows(5);
+        jScrollPane2.setViewportView(txtObservaciones);
 
         jPanel8.add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 230, 960, 60));
-        jPanel8.add(jTextField8, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 90, 245, -1));
+        jPanel8.add(txtNombres, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 90, 245, -1));
 
         jLabel14.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel14.setText("Tipo de documento");
@@ -188,25 +225,25 @@ public class FrmClientes extends javax.swing.JFrame {
         jLabel15.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel15.setText("Estado Civil");
         jPanel8.add(jLabel15, new org.netbeans.lib.awtextra.AbsoluteConstraints(1040, 70, -1, -1));
-        jPanel8.add(jTextField9, new org.netbeans.lib.awtextra.AbsoluteConstraints(1400, 90, 270, -1));
+        jPanel8.add(txtCorreo, new org.netbeans.lib.awtextra.AbsoluteConstraints(1400, 90, 270, -1));
 
         jLabel16.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel16.setText("Estado del cliente");
         jPanel8.add(jLabel16, new org.netbeans.lib.awtextra.AbsoluteConstraints(700, 130, -1, -1));
-        jPanel8.add(jTextField10, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 150, 240, -1));
+        jPanel8.add(txtCondicionLaboral, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 150, 240, -1));
 
         jLabel18.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel18.setText("Ingresos mensuales");
         jPanel8.add(jLabel18, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 126, -1, 20));
 
-        jComboBox3.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "<<Seleccionar>>", "Activo", "Inactivo" }));
-        jPanel8.add(jComboBox3, new org.netbeans.lib.awtextra.AbsoluteConstraints(700, 150, 270, -1));
+        cboEstado.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "<<Seleccionar>>", "Activo", "Inactivo" }));
+        jPanel8.add(cboEstado, new org.netbeans.lib.awtextra.AbsoluteConstraints(700, 150, 270, -1));
 
         jPanel1.add(jPanel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 120, 1690, 310));
 
         jPanel2.setBackground(new java.awt.Color(255, 255, 255));
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        tblClientes.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -217,7 +254,7 @@ public class FrmClientes extends javax.swing.JFrame {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        jScrollPane1.setViewportView(jTable1);
+        jScrollPane1.setViewportView(tblClientes);
 
         jLabel10.setIcon(new javax.swing.ImageIcon(getClass().getResource("/sistemaprestamo/img/menu.png"))); // NOI18N
 
@@ -241,22 +278,22 @@ public class FrmClientes extends javax.swing.JFrame {
         jLabel11.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         jLabel11.setText("Listado de Clientes");
 
-        btnCancelar.setBackground(new java.awt.Color(204, 0, 0));
-        btnCancelar.setForeground(new java.awt.Color(255, 255, 255));
-        btnCancelar.setText("Desactivar");
-        btnCancelar.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(13, 71, 161)));
-        btnCancelar.addActionListener(this::btnCancelarActionPerformed);
+        btnDesactivar.setBackground(new java.awt.Color(204, 0, 0));
+        btnDesactivar.setForeground(new java.awt.Color(255, 255, 255));
+        btnDesactivar.setText("Desactivar");
+        btnDesactivar.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(13, 71, 161)));
+        btnDesactivar.addActionListener(this::btnDesactivarActionPerformed);
 
-        btnCancelar2.setBackground(new java.awt.Color(13, 71, 161));
-        btnCancelar2.setForeground(new java.awt.Color(255, 255, 255));
-        btnCancelar2.setText("Buscar");
-        btnCancelar2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(13, 71, 161)));
-        btnCancelar2.addActionListener(this::btnCancelar2ActionPerformed);
+        btnBuscar.setBackground(new java.awt.Color(13, 71, 161));
+        btnBuscar.setForeground(new java.awt.Color(255, 255, 255));
+        btnBuscar.setText("Buscar");
+        btnBuscar.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(13, 71, 161)));
+        btnBuscar.addActionListener(this::btnBuscarActionPerformed);
 
-        btnCancelar3.setForeground(new java.awt.Color(13, 71, 161));
-        btnCancelar3.setText("Editar");
-        btnCancelar3.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(13, 71, 161)));
-        btnCancelar3.addActionListener(this::btnCancelar3ActionPerformed);
+        btnEditar.setForeground(new java.awt.Color(13, 71, 161));
+        btnEditar.setText("Editar");
+        btnEditar.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(13, 71, 161)));
+        btnEditar.addActionListener(this::btnEditarActionPerformed);
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -274,13 +311,13 @@ public class FrmClientes extends javax.swing.JFrame {
                                 .addComponent(jLabel11)))
                         .addContainerGap(675, Short.MAX_VALUE))
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(jTextField7, javax.swing.GroupLayout.PREFERRED_SIZE, 741, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(txtBusqueda, javax.swing.GroupLayout.PREFERRED_SIZE, 741, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(27, 27, 27)
-                        .addComponent(btnCancelar2, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnBuscar, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btnCancelar3, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnEditar, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(53, 53, 53)
-                        .addComponent(btnCancelar, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnDesactivar, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(50, 50, 50))))
         );
         jPanel2Layout.setVerticalGroup(
@@ -292,10 +329,10 @@ public class FrmClientes extends javax.swing.JFrame {
                     .addComponent(jLabel11))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jTextField7, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnCancelar2, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnCancelar3, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnCancelar, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtBusqueda, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnBuscar, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnEditar, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnDesactivar, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(52, 52, 52)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(288, Short.MAX_VALUE))
@@ -319,56 +356,187 @@ public class FrmClientes extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnRegistrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegistrarActionPerformed
+    private void btnNuevoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNuevoActionPerformed
+        limpiarFormulario();
+    }//GEN-LAST:event_btnNuevoActionPerformed
 
-    }//GEN-LAST:event_btnRegistrarActionPerformed
+    private void btnDesactivarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDesactivarActionPerformed
+        controlador.desactivar();
+    }//GEN-LAST:event_btnDesactivarActionPerformed
 
-    private void btnCancelarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelarActionPerformed
-        
+    private void cboEstadoCivilActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cboEstadoCivilActionPerformed
+        // Sin acción: el estado civil se lee al guardar.
+    }//GEN-LAST:event_cboEstadoCivilActionPerformed
+
+    private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
+        // Sin código es un cliente nuevo (registrar); con código es uno existente (actualizar).
+        if (obtenerCodigoFormulario().isEmpty()) {
+            controlador.registrar();
+        } else {
+            controlador.actualizar();
         }
+    }//GEN-LAST:event_btnGuardarActionPerformed
 
+    private void btnLimpiarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimpiarActionPerformed
+        limpiarFormulario();
+    }//GEN-LAST:event_btnLimpiarActionPerformed
 
-        /**
-        * Método principal para ejecutar la ventana con apariencia del sistema
-        */
-        public static void main(String args[]) {
+    private void btnBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarActionPerformed
+        controlador.listar();
+    }//GEN-LAST:event_btnBuscarActionPerformed
 
-            
-    }//GEN-LAST:event_btnCancelarActionPerformed
+    private void btnEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditarActionPerformed
+        cargarClienteSeleccionado();
+    }//GEN-LAST:event_btnEditarActionPerformed
 
-    private void jComboBox2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox2ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jComboBox2ActionPerformed
+    // ---------------------------------------------------------------------
+    // Métodos que usa ClienteController
+    // ---------------------------------------------------------------------
 
-    private void btnRegistrar1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegistrar1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnRegistrar1ActionPerformed
+    /** Arma un Cliente con lo escrito en el formulario (sin validar reglas de negocio). */
+    public Cliente obtenerClienteFormulario() {
+        Cliente cliente = new Cliente();
+        cliente.setCodigo(obtenerCodigoFormulario());
+        cliente.setTipoDocumentoCodigo(codigoSeleccionado(cboTipoDocumento, Cliente.TIPOS_DOCUMENTO));
+        cliente.setNumeroDocumento(txtNumeroDocumento.getText());
+        cliente.setApellidos(txtApellidos.getText());
+        cliente.setNombres(txtNombres.getText());
+        cliente.setFechaNacimiento(leerFecha(dcFechaNacimiento.getDate()));
+        cliente.setEstadoCivilCodigo(codigoSeleccionado(cboEstadoCivil, Cliente.ESTADOS_CIVILES));
+        cliente.setDireccion(txtDireccion.getText());
+        cliente.setTelefono(txtTelefono.getText());
+        cliente.setCorreo(txtCorreo.getText());
+        cliente.setCondicionLaboral(txtCondicionLaboral.getText());
+        cliente.setNivelIngresos(leerMonto(txtNivelIngresos.getText()));
+        cliente.setObservaciones(txtObservaciones.getText());
+        return cliente;
+    }
 
-    private void btnCancelar1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelar1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnCancelar1ActionPerformed
+    public String obtenerCodigoFormulario() {
+        return txtCodigo.getText().trim();
+    }
 
-    private void btnCancelar2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelar2ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnCancelar2ActionPerformed
+    public String obtenerNombreCompletoFormulario() {
+        return (txtNombres.getText().trim() + " " + txtApellidos.getText().trim()).trim();
+    }
 
-    private void btnCancelar3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelar3ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnCancelar3ActionPerformed
+    public String obtenerBusqueda() {
+        return txtBusqueda.getText().trim();
+    }
 
+    /** HU-01 CA-01: muestra la lista de clientes en la tabla. */
+    public void mostrarClientes(List<Cliente> clientes) {
+        clientesMostrados = new ArrayList<>(clientes);
+        modeloTabla.setRowCount(0);
+        for (Cliente cliente : clientesMostrados) {
+            modeloTabla.addRow(new Object[]{
+                cliente.getCodigo(),
+                cliente.getTipoDocumentoNombre() + " " + cliente.getNumeroDocumento(),
+                cliente.getApellidos(),
+                cliente.getNombres(),
+                cliente.getTelefono(),
+                cliente.getCorreo(),
+                cliente.getCondicionLaboral(),
+                cliente.estaActivo() ? "Activo" : "Inactivo"
+            });
+        }
+    }
 
+    public void limpiarFormulario() {
+        txtCodigo.setText("");
+        cboTipoDocumento.setSelectedIndex(0);
+        txtNumeroDocumento.setText("");
+        txtApellidos.setText("");
+        txtNombres.setText("");
+        dcFechaNacimiento.setDate(null);
+        cboEstadoCivil.setSelectedIndex(0);
+        txtDireccion.setText("");
+        txtTelefono.setText("");
+        txtCorreo.setText("");
+        txtCondicionLaboral.setText("");
+        txtNivelIngresos.setText("");
+        cboEstado.setSelectedIndex(0);
+        txtObservaciones.setText("");
+        tblClientes.clearSelection();
+        txtNumeroDocumento.requestFocusInWindow();
+    }
+
+    public void mostrarMensaje(String mensaje, String titulo, int tipo) {
+        JOptionPane.showMessageDialog(this, mensaje, titulo, tipo);
+    }
+
+    // ---------------------------------------------------------------------
+    // Apoyo interno
+    // ---------------------------------------------------------------------
+
+    /** Pasa el cliente elegido en la tabla al formulario para editarlo. */
+    private void cargarClienteSeleccionado() {
+        int fila = tblClientes.getSelectedRow();
+        if (fila < 0 || fila >= clientesMostrados.size()) {
+            mostrarMensaje("Seleccione un cliente de la lista para editarlo.", "Editar cliente",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        Cliente cliente = clientesMostrados.get(fila);
+        txtCodigo.setText(cliente.getCodigo());
+        cboTipoDocumento.setSelectedIndex(posicionDe(Cliente.TIPOS_DOCUMENTO, cliente.getTipoDocumentoCodigo()));
+        txtNumeroDocumento.setText(cliente.getNumeroDocumento());
+        txtApellidos.setText(cliente.getApellidos());
+        txtNombres.setText(cliente.getNombres());
+        dcFechaNacimiento.setDate(Date.from(
+                cliente.getFechaNacimiento().atStartOfDay(ZoneId.systemDefault()).toInstant()));
+        cboEstadoCivil.setSelectedIndex(posicionDe(Cliente.ESTADOS_CIVILES, cliente.getEstadoCivilCodigo()));
+        txtDireccion.setText(cliente.getDireccion());
+        txtTelefono.setText(cliente.getTelefono());
+        txtCorreo.setText(cliente.getCorreo());
+        txtCondicionLaboral.setText(cliente.getCondicionLaboral());
+        txtNivelIngresos.setText(cliente.getNivelIngresos().toPlainString());
+        cboEstado.setSelectedIndex(cliente.estaActivo() ? 1 : 2);
+        txtObservaciones.setText(cliente.getObservaciones() == null ? "" : cliente.getObservaciones());
+    }
+
+    /** Código de la opción elegida, o null si está en "&lt;&lt;Seleccionar&gt;&gt;" (posición 0). */
+    private String codigoSeleccionado(JComboBox<String> combo, List<ItemCatalogo> opciones) {
+        int posicion = combo.getSelectedIndex();
+        return posicion <= 0 ? null : opciones.get(posicion - 1).getCodigo();
+    }
+
+    /** Posición del combo (contando "&lt;&lt;Seleccionar&gt;&gt;") de la opción con ese código. */
+    private int posicionDe(List<ItemCatalogo> opciones, String codigo) {
+        for (int i = 0; i < opciones.size(); i++) {
+            if (opciones.get(i).getCodigo().equals(codigo)) {
+                return i + 1;
+            }
+        }
+        return 0;
+    }
+
+    private LocalDate leerFecha(Date fecha) {
+        return fecha == null ? null : fecha.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+    }
+
+    private BigDecimal leerMonto(String texto) {
+        if (texto.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return new BigDecimal(texto.trim());
+        } catch (NumberFormatException excepcion) {
+            throw new IllegalArgumentException("El nivel de ingresos debe ser un número válido.");
+        }
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnCancelar;
-    private javax.swing.JButton btnCancelar1;
-    private javax.swing.JButton btnCancelar2;
-    private javax.swing.JButton btnCancelar3;
-    private javax.swing.JButton btnRegistrar;
-    private javax.swing.JButton btnRegistrar1;
-    private javax.swing.JComboBox<String> jComboBox1;
-    private javax.swing.JComboBox<String> jComboBox2;
-    private javax.swing.JComboBox<String> jComboBox3;
-    private com.toedter.calendar.JDateChooser jDateChooser1;
+    private javax.swing.JButton btnDesactivar;
+    private javax.swing.JButton btnLimpiar;
+    private javax.swing.JButton btnBuscar;
+    private javax.swing.JButton btnEditar;
+    private javax.swing.JButton btnNuevo;
+    private javax.swing.JButton btnGuardar;
+    private javax.swing.JComboBox<String> cboTipoDocumento;
+    private javax.swing.JComboBox<String> cboEstadoCivil;
+    private javax.swing.JComboBox<String> cboEstado;
+    private com.toedter.calendar.JDateChooser dcFechaNacimiento;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -393,18 +561,18 @@ public class FrmClientes extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel8;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JTextArea jTextArea1;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField10;
-    private javax.swing.JTextField jTextField2;
-    private javax.swing.JTextField jTextField3;
-    private javax.swing.JTextField jTextField4;
-    private javax.swing.JTextField jTextField5;
-    private javax.swing.JTextField jTextField6;
-    private javax.swing.JTextField jTextField7;
-    private javax.swing.JTextField jTextField8;
-    private javax.swing.JTextField jTextField9;
+    private javax.swing.JTable tblClientes;
+    private javax.swing.JTextArea txtObservaciones;
+    private javax.swing.JTextField txtCodigo;
+    private javax.swing.JTextField txtCondicionLaboral;
+    private javax.swing.JTextField txtTelefono;
+    private javax.swing.JTextField txtNumeroDocumento;
+    private javax.swing.JTextField txtApellidos;
+    private javax.swing.JTextField txtNivelIngresos;
+    private javax.swing.JTextField txtDireccion;
+    private javax.swing.JTextField txtBusqueda;
+    private javax.swing.JTextField txtNombres;
+    private javax.swing.JTextField txtCorreo;
     private javax.swing.JPanel panelHeader;
     // End of variables declaration//GEN-END:variables
 }
