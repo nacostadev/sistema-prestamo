@@ -465,6 +465,12 @@ public class FrmClientes extends javax.swing.JFrame {
         JOptionPane.showMessageDialog(this, mensaje, titulo, tipo);
     }
 
+    /** Pregunta Sí/No al usuario y devuelve true si responde Sí. */
+    public boolean confirmar(String mensaje, String titulo) {
+        return JOptionPane.showConfirmDialog(this, mensaje, titulo, JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION;
+    }
+
     // ---------------------------------------------------------------------
     // Apoyo interno
     // ---------------------------------------------------------------------

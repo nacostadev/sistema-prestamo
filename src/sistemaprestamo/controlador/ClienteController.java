@@ -16,10 +16,16 @@ import sistemaprestamo.vista.FrmClientes;
 public class ClienteController {
 
     private final FrmClientes vista;
-    private final ClienteDAO clienteDAO = new ClienteDAO();
+    private final ClienteDAO clienteDAO;
 
     public ClienteController(FrmClientes vista) {
+        this(vista, new ClienteDAO());
+    }
+
+    /** Permite indicar el acceso a datos (útil para probar el flujo sin base de datos). */
+    public ClienteController(FrmClientes vista, ClienteDAO clienteDAO) {
         this.vista = vista;
+        this.clienteDAO = clienteDAO;
     }
 
     /** Muestra la lista de clientes al abrir el módulo (HU-01 CA-01). */
@@ -80,13 +86,8 @@ public class ClienteController {
             Cliente.validarRegistrado(cliente);
             cliente.validarPuedeDesactivarse(clienteDAO.contarPrestamosVigentes(codigo));
 
-            int confirmacion = JOptionPane.showConfirmDialog(
-                    vista,
-                    "¿Desea desactivar al cliente " + vista.obtenerNombreCompletoFormulario() + "?",
-                    "Confirmar desactivación",
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.QUESTION_MESSAGE);
-            if (confirmacion != JOptionPane.YES_OPTION) {
+            if (!vista.confirmar("¿Desea desactivar al cliente " + vista.obtenerNombreCompletoFormulario() + "?",
+                    "Confirmar desactivación")) {
                 return;
             }
             clienteDAO.desactivar(codigo);
