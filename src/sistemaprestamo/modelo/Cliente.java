@@ -5,27 +5,18 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
 
-/**
- * Entidad Cliente (HU-01): representa un registro de Cliente.Clientes y
- * contiene sus reglas de negocio (sección REGLAS DE NEGOCIO).
- * Los atributos terminados en "Nombre" se llenan al consultar y no se envían
- * a la base de datos.
- */
+
 public class Cliente {
 
     public static final String ESTADO_ACTIVO = "A";
     public static final String ESTADO_INACTIVO = "I";
 
-    /** Código de "DNI" en Cliente.TiposDocumento (datos iniciales del script). */
     private static final String TIPO_DOCUMENTO_DNI = "TD01";
 
-    // Opciones de los combos. Sus códigos coinciden con los datos iniciales del script SQL.
-    /** HU-01 RN-01: DNI, pasaporte o carnet de extranjería. */
     public static final List<ItemCatalogo> TIPOS_DOCUMENTO = List.of(
             new ItemCatalogo("TD01", "DNI"),
             new ItemCatalogo("TD02", "Pasaporte"),
             new ItemCatalogo("TD03", "Carnet de Extranjería"));
-    /** Valores supuestos: la HU-01 no define la lista de estados civiles. */
     public static final List<ItemCatalogo> ESTADOS_CIVILES = List.of(
             new ItemCatalogo("EC01", "Soltero(a)"),
             new ItemCatalogo("EC02", "Casado(a)"),
@@ -33,7 +24,6 @@ public class Cliente {
             new ItemCatalogo("EC04", "Viudo(a)"),
             new ItemCatalogo("EC05", "Conviviente"));
 
-    /** HU-01 RN-01: edad mínima para ser cliente. */
     private static final int EDAD_MINIMA = 18;
 
     private static final String EXPRESION_DNI = "^\\d{8}$";
@@ -216,13 +206,7 @@ public class Cliente {
     }
 
     // REGLAS DE NEGOCIO
-    // Los métodos auxiliares sin "private" tienen visibilidad de paquete para poder
-    // probarlos de forma individual en ClienteTest.
 
-    /**
-     * HU-01 RN-01, RN-03 y CA-05: verifica los campos obligatorios y sus
-     * formatos. Quita los espacios sobrantes de los textos.
-     */
     public void validar() {
         String faltantes = obtenerCamposObligatoriosFaltantes();
         if (!faltantes.isEmpty()) {
@@ -254,11 +238,7 @@ public class Cliente {
         validarLongitud(observaciones, "observaciones", 255);
     }
 
-    /**
-     * HU-01 RN-02 y CA-03: el número de documento no puede repetirse.
-     *
-     * @param clientesConElMismoDocumento clientes que ya tienen este número de documento
-     */
+
     public void validarDocumentoUnico(List<Cliente> clientesConElMismoDocumento) {
         for (Cliente existente : clientesConElMismoDocumento) {
             if (!existente.getCodigo().equals(codigo)) {
@@ -268,20 +248,13 @@ public class Cliente {
         }
     }
 
-    /** HU-01 RN-05: solo se opera sobre clientes registrados. */
     public static void validarRegistrado(Cliente clienteRegistrado) {
         if (clienteRegistrado == null) {
             throw new IllegalArgumentException("El cliente no está registrado en el sistema.");
         }
     }
 
-    /**
-     * HU-01 RN-06 y CA-06: no se desactiva un cliente con préstamos.
-     * DEFINICIÓN (indicada por el equipo): "préstamo activo" es un préstamo en
-     * estado Vigente. Las solicitudes en evaluación no existen en el sistema.
-     *
-     * @param cantidadPrestamosVigentes préstamos del cliente en estado Vigente
-     */
+
     public void validarPuedeDesactivarse(int cantidadPrestamosVigentes) {
         if (cantidadPrestamosVigentes > 0) {
             throw new IllegalArgumentException(
@@ -328,7 +301,6 @@ public class Cliente {
         observaciones = observaciones == null ? null : observaciones.trim();
     }
 
-    /** HU-01 RN-01: el cliente debe ser mayor de edad (18 años cumplidos). */
     void validarMayorDeEdad() {
         if (Period.between(fechaNacimiento, LocalDate.now()).getYears() < EDAD_MINIMA) {
             throw new IllegalArgumentException("El cliente debe ser mayor de edad (18 años o más).");
@@ -341,8 +313,6 @@ public class Cliente {
                 throw new IllegalArgumentException("El DNI debe contener exactamente 8 dígitos.");
             }
         } else {
-            // El formato de pasaporte y carnet de extranjería no está definido en la HU:
-            // solo se respeta el largo máximo de la columna.
             validarLongitud(numeroDocumento, "número de documento", 12);
         }
     }

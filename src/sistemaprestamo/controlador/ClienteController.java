@@ -7,12 +7,7 @@ import sistemaprestamo.modelo.Cliente;
 import sistemaprestamo.persistencia.ClienteDAO;
 import sistemaprestamo.vista.FrmClientes;
 
-/**
- * Controlador de la ventana de clientes (HU-01).
- * Coordina el flujo: lee los datos de la vista, consulta la persistencia, pide
- * a la clase Cliente que aplique sus reglas de negocio y guarda. No contiene
- * reglas, cálculos ni consultas SQL.
- */
+
 public class ClienteController {
 
     private final FrmClientes vista;
@@ -22,18 +17,15 @@ public class ClienteController {
         this(vista, new ClienteDAO());
     }
 
-    /** Permite indicar el acceso a datos (útil para probar el flujo sin base de datos). */
     public ClienteController(FrmClientes vista, ClienteDAO clienteDAO) {
         this.vista = vista;
         this.clienteDAO = clienteDAO;
     }
 
-    /** Muestra la lista de clientes al abrir el módulo (HU-01 CA-01). */
     public void iniciar() {
         listar();
     }
 
-    /** HU-01 CA-02, CA-03, CA-05: valida el cliente y su documento y lo registra. */
     public void registrar() {
         try {
             Cliente cliente = vista.obtenerClienteFormulario();
@@ -52,7 +44,6 @@ public class ClienteController {
         }
     }
 
-    /** HU-01 CA-04, CA-05 y RN-05: solo se actualiza un cliente registrado. */
     public void actualizar() {
         try {
             Cliente cliente = vista.obtenerClienteFormulario();
@@ -75,7 +66,6 @@ public class ClienteController {
         }
     }
 
-    /** HU-01 RN-06 y CA-06: desactiva al cliente solo si no tiene préstamos vigentes. */
     public void desactivar() {
         try {
             String codigo = vista.obtenerCodigoFormulario();

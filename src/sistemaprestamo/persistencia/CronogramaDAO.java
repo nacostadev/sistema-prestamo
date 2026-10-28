@@ -6,13 +6,9 @@ import java.sql.SQLException;
 import sistemaprestamo.modelo.Cronograma;
 import sistemaprestamo.modelo.DetalleCronograma;
 
-/**
- * Acceso a datos de cronogramas con SQL directo (INSERT).
- * Los cálculos y las reglas de negocio están en las clases Prestamo y Cronograma.
- */
+
 public class CronogramaDAO {
 
-    /** Error de SQL Server por violar una restricción UNIQUE. */
     private static final int ERROR_VALOR_DUPLICADO = 2627;
 
     private static final String SQL_MAXIMO_CRONOGRAMA = "SELECT MAX(CronogramasCodigo) FROM Cronograma.Cronogramas";
@@ -28,11 +24,7 @@ public class CronogramaDAO {
             + "DetalleSaldoAnterior, DetalleInteres, DetalleAmortizacion, DetalleCuota, DetalleSaldoPendiente) "
             + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-    /**
-     * Guarda la cabecera y todas las cuotas del cronograma en una sola
-     * transacción: si algo falla no se guarda nada (HU-03 CA-06).
-     * Asigna el código generado (CR0001...) al cronograma y lo devuelve.
-     */
+
     public String guardar(Cronograma cronograma) throws SQLException {
         try (Connection conexion = Conexion.getConnection()) {
             conexion.setAutoCommit(false);
@@ -48,7 +40,6 @@ public class CronogramaDAO {
                 throw excepcion;
             }
         } catch (SQLException excepcion) {
-            // HU-03 RN-09: la tabla solo admite un cronograma por préstamo (UNIQUE).
             if (excepcion.getErrorCode() == ERROR_VALOR_DUPLICADO) {
                 throw new IllegalArgumentException(
                         "El préstamo ya tiene un cronograma generado y no puede modificarse.", excepcion);

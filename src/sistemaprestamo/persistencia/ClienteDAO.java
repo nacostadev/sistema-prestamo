@@ -10,12 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import sistemaprestamo.modelo.Cliente;
 
-/**
- * Acceso a datos de clientes. Todas las operaciones se ejecutan mediante los
- * procedimientos almacenados del esquema Cliente (sp_Cliente_xxxx), que solo
- * insertan, actualizan y consultan. Las reglas de negocio están en
- * la clase Cliente (modelo).
- */
+
 public class ClienteDAO {
 
     private static final String SP_LISTAR = "{call Cliente.sp_Cliente_Listar(?,?)}";
@@ -25,24 +20,19 @@ public class ClienteDAO {
             "{call Cliente.sp_Cliente_Actualizar(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}";
     private static final String SP_DESACTIVAR = "{call Cliente.sp_Cliente_Desactivar(?)}";
 
-    /** Nombre del estado que define un préstamo activo (HU-01 RN-06). */
     private static final String ESTADO_PRESTAMO_VIGENTE = "Vigente";
 
-    /** Consulta directa: cuenta los préstamos vigentes del cliente (HU-01 RN-06). */
     private static final String SQL_CONTAR_PRESTAMOS_VIGENTES =
             "SELECT COUNT(*) FROM Prestamo.Prestamos AS p "
             + "INNER JOIN Prestamo.EstadosPrestamo AS e ON e.EstadosPrestamoCodigo = p.EstadosPrestamoCodigo "
             + "WHERE p.ClientesCodigo = ? AND e.EstadosPrestamoNombre = ?";
 
-    /** Error de SQL Server por violar una restricción UNIQUE (documento repetido). */
     private static final int ERROR_VALOR_DUPLICADO = 2627;
 
-    /** Registra el cliente y devuelve el código generado por la base de datos. */
     public String registrar(Cliente cliente) throws SQLException {
         try (Connection conexion = Conexion.getConnection();
              CallableStatement sentencia = conexion.prepareCall(SP_REGISTRAR)) {
 
-            // Parámetros 1 a 14: mismos datos y orden que sp_Cliente_Registrar.
             asignarDatos(sentencia, cliente, 1);
             sentencia.registerOutParameter(15, Types.NCHAR);
             sentencia.execute();
@@ -55,7 +45,6 @@ public class ClienteDAO {
         }
     }
 
-    /** Actualiza los datos de un cliente registrado (el código va primero). */
     public void actualizar(Cliente cliente) throws SQLException {
         try (Connection conexion = Conexion.getConnection();
              CallableStatement sentencia = conexion.prepareCall(SP_ACTUALIZAR)) {
@@ -68,7 +57,6 @@ public class ClienteDAO {
         }
     }
 
-    /** Desactiva al cliente (cambia su estado a inactivo). La regla de préstamos se valida antes, en Cliente. */
     public void desactivar(String codigoCliente) throws SQLException {
         try (Connection conexion = Conexion.getConnection();
              CallableStatement sentencia = conexion.prepareCall(SP_DESACTIVAR)) {
@@ -78,18 +66,15 @@ public class ClienteDAO {
         }
     }
 
-    /** Lista todos los clientes; con un filtro de texto, los que lo contengan en documento, apellidos o nombres. */
     public List<Cliente> listar(String busqueda) throws SQLException {
         return consultar(null, busqueda);
     }
 
-    /** Devuelve el cliente con ese código, o null si no existe. */
     public Cliente buscarPorCodigo(String codigoCliente) throws SQLException {
         List<Cliente> encontrados = consultar(codigoCliente, null);
         return encontrados.isEmpty() ? null : encontrados.get(0);
     }
 
-    /** Devuelve los clientes cuyo número de documento es exactamente el indicado. */
     public List<Cliente> buscarPorDocumento(String numeroDocumento) throws SQLException {
         List<Cliente> exactos = new ArrayList<>();
         for (Cliente cliente : consultar(null, numeroDocumento)) {
@@ -100,7 +85,6 @@ public class ClienteDAO {
         return exactos;
     }
 
-    /** Cantidad de préstamos vigentes del cliente. */
     public int contarPrestamosVigentes(String codigoCliente) throws SQLException {
         try (Connection conexion = Conexion.getConnection();
              PreparedStatement sentencia = conexion.prepareStatement(SQL_CONTAR_PRESTAMOS_VIGENTES)) {
@@ -114,11 +98,7 @@ public class ClienteDAO {
         }
     }
 
-    /**
-     * HU-01 RN-02: la tabla tiene UNIQUE en el número de documento. Si otro
-     * usuario registró el mismo documento entre la validación y el guardado,
-     * el error se informa como regla de negocio y no como falla técnica.
-     */
+
     private SQLException traducirDocumentoDuplicado(SQLException excepcion) {
         if (excepcion.getErrorCode() == ERROR_VALOR_DUPLICADO) {
             throw new IllegalArgumentException(
@@ -143,12 +123,7 @@ public class ClienteDAO {
         return clientes;
     }
 
-    /**
-     * Asigna los 14 datos del cliente a partir de la posición indicada, en el
-     * orden de los procedimientos: tipo de documento, número, apellidos,
-     * nombres, fecha de nacimiento, estado civil, dirección, teléfono, correo,
-     * condición laboral, ingresos, cónyuge, referencias y observaciones.
-     */
+
     private void asignarDatos(CallableStatement sentencia, Cliente cliente, int inicio)
             throws SQLException {
         int i = inicio;

@@ -3,10 +3,7 @@ package sistemaprestamo.modelo;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-/**
- * Una cuota del cronograma de pagos (HU-03 RN-07). Es un objeto de solo
- * lectura: el cronograma no puede editarse manualmente (RN-09).
- */
+
 public class DetalleCronograma {
 
     private final int numeroCuota;

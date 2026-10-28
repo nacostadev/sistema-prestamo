@@ -2,11 +2,6 @@ package sistemaprestamo.modelo;
 
 import java.util.Objects;
 
-/**
- * Elemento de un catálogo (tipo de documento, estado civil, moneda, etc.)
- * formado por un código y un nombre. Su texto es el nombre, por lo que puede
- * usarse directamente en un JComboBox.
- */
 public class ItemCatalogo {
 
     private final String codigo;

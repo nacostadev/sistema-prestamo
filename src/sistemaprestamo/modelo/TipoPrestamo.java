@@ -2,11 +2,7 @@ package sistemaprestamo.modelo;
 
 import java.math.BigDecimal;
 
-/**
- * Tipo de préstamo con sus condiciones (HU-02 RN-04 y RN-05): rango de plazo,
- * rango de TEA (fracción decimal, 0.2000 = 20 %) y límites de monto de la
- * política crediticia. Su texto es el nombre, para usarlo en un JComboBox.
- */
+
 public class TipoPrestamo {
 
     private final String codigo;
@@ -55,12 +51,10 @@ public class TipoPrestamo {
         return tasaMaxima;
     }
 
-    /** Puede ser nulo si el tipo no tiene política crediticia definida. */
     public BigDecimal getMontoMinimo() {
         return montoMinimo;
     }
 
-    /** Puede ser nulo si el tipo no tiene política crediticia definida. */
     public BigDecimal getMontoMaximo() {
         return montoMaximo;
     }

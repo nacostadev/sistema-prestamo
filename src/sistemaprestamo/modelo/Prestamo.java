@@ -7,14 +7,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Entidad Préstamo (HU-02 y HU-03): representa un registro de Prestamo.Prestamos
- * y contiene sus reglas de negocio y los cálculos del cronograma de pagos
- * (sección REGLAS DE NEGOCIO).
- * La TEA se maneja como fracción decimal (0.2000 = 20 %), igual que en la base
- * de datos. Los atributos terminados en "Nombre" o "Simbolo" se llenan al
- * consultar y no se envían a la base de datos.
- */
 public class Prestamo {
 
     public static final String ESTADO_VIGENTE = "Vigente";
@@ -204,12 +196,7 @@ public class Prestamo {
         return codigo + " - " + clienteNombre + " (" + estadoNombre + ")";
     }
 
-    // REGLAS DE NEGOCIO
 
-    /**
-     * HU-02 RN-02, RN-03 y CA-05: verifica los campos obligatorios y que los
-     * importes sean positivos. Ajusta la escala del monto (2) y de la TEA (4).
-     */
     public void validar() {
         List<String> faltantes = new ArrayList<>();
         agregarSiVacio(faltantes, clienteCodigo, "cliente");
@@ -246,11 +233,6 @@ public class Prestamo {
         tea = tea.setScale(4, RoundingMode.HALF_UP);
     }
 
-    /**
-     * HU-02 RN-04 y RN-05 (CA-04, CA-06): el monto debe estar dentro de la
-     * política crediticia y el plazo y la TEA dentro de las condiciones del
-     * tipo de préstamo.
-     */
     public void validarCondiciones(TipoPrestamo tipo) {
         if (tipo == null) {
             throw new IllegalArgumentException("El tipo de préstamo seleccionado no está registrado.");
@@ -274,11 +256,7 @@ public class Prestamo {
         }
     }
 
-    /**
-     * HU-03 RN-01, RN-02 y RN-08 (CA-04, CA-05): para generar el cronograma el
-     * préstamo debe estar vigente y tener monto, plazo, TEA y fecha de
-     * desembolso válidos.
-     */
+
     public void validarPuedeGenerarCronograma() {
         if (!estaVigente()) {
             throw new IllegalArgumentException("Solo se puede generar el cronograma de un préstamo vigente.");
@@ -292,13 +270,11 @@ public class Prestamo {
         }
     }
 
-    /** HU-03 RN-03: TEM = (1 + TEA)^(1/12) - 1. */
     public BigDecimal calcularTem() {
         double tem = Math.pow(1.0 + tea.doubleValue(), 1.0 / 12.0) - 1.0;
         return BigDecimal.valueOf(tem);
     }
 
-    /** HU-03 RN-04 (método francés): Cuota = P * i / (1 - (1 + i)^-n), a 2 decimales. */
     public BigDecimal calcularCuotaFija() {
         BigDecimal tem = calcularTem();
         BigDecimal factor = BigDecimal.ONE.add(tem).pow(plazoCuotas, PRECISION);
@@ -308,19 +284,11 @@ public class Prestamo {
         return cuota.setScale(ESCALA_MONEDA, RoundingMode.HALF_UP);
     }
 
-    /** HU-03 RN-05: Interés = saldo anterior * i, a 2 decimales. */
     public BigDecimal calcularInteres(BigDecimal saldoAnterior) {
         return saldoAnterior.multiply(calcularTem(), PRECISION).setScale(ESCALA_MONEDA, RoundingMode.HALF_UP);
     }
 
-    /**
-     * HU-03 RN-05: genera el cronograma del préstamo. Para cada cuota calcula
-     * interés, amortización (cuota - interés) y saldo pendiente (saldo anterior
-     * - amortización). La última cuota absorbe la diferencia por redondeo para
-     * dejar el saldo en cero. La fecha de la cuota k es el desembolso más k meses.
-     * Si el total amortizado no coincide con el monto lanza IllegalArgumentException
-     * (CA-07).
-     */
+
     public Cronograma generarCronograma() {
         validarPuedeGenerarCronograma();
 

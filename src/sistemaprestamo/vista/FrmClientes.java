@@ -16,14 +16,7 @@ import sistemaprestamo.controlador.ClienteController;
 import sistemaprestamo.modelo.Cliente;
 import sistemaprestamo.modelo.ItemCatalogo;
 
-/**
- * Ventana de gestión de clientes (HU-01). Solo muestra y recoge datos: las
- * reglas de negocio están en la clase Cliente y el flujo en ClienteController.
- * Los combos de tipo de documento y estado civil tienen la opción
- * "&lt;&lt;Seleccionar&gt;&gt;" en la posición 0 y, después, las opciones en el mismo
- * orden que Cliente.TIPOS_DOCUMENTO y Cliente.ESTADOS_CIVILES.
- * El diseño usa GridBagLayout y BorderLayout para ajustarse al tamaño de la pantalla.
- */
+
 public class FrmClientes extends javax.swing.JFrame {
 
     private static final String[] COLUMNAS = {"Código", "Documento", "Apellidos", "Nombres",
@@ -52,7 +45,6 @@ public class FrmClientes extends javax.swing.JFrame {
         this.controlador = controlador;
     }
 
-    /** Usa el tamaño que necesita, sin pasar del 95% de la pantalla ni de un ancho máximo. */
     private void ajustarATamanioDePantalla() {
         Rectangle pantalla = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
         int ancho = Math.min(Math.max(getWidth(), 1000), Math.min(1180, (int) (pantalla.width * 0.95)));
@@ -581,7 +573,6 @@ public class FrmClientes extends javax.swing.JFrame {
     // Métodos que usa ClienteController
     // ---------------------------------------------------------------------
 
-    /** Arma un Cliente con lo escrito en el formulario (sin validar reglas de negocio). */
     public Cliente obtenerClienteFormulario() {
         Cliente cliente = new Cliente();
         cliente.setCodigo(obtenerCodigoFormulario());
@@ -612,7 +603,6 @@ public class FrmClientes extends javax.swing.JFrame {
         return txtBusqueda.getText().trim();
     }
 
-    /** HU-01 CA-01: muestra la lista de clientes en la tabla. */
     public void mostrarClientes(List<Cliente> clientes) {
         clientesMostrados = new ArrayList<>(clientes);
         modeloTabla.setRowCount(0);
@@ -663,7 +653,6 @@ public class FrmClientes extends javax.swing.JFrame {
     // Apoyo interno
     // ---------------------------------------------------------------------
 
-    /** Pasa el cliente elegido en la tabla al formulario para editarlo. */
     private void cargarClienteSeleccionado() {
         int fila = tblClientes.getSelectedRow();
         if (fila < 0 || fila >= clientesMostrados.size()) {

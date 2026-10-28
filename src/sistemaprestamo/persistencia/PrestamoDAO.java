@@ -10,15 +10,10 @@ import java.util.List;
 import sistemaprestamo.modelo.Prestamo;
 import sistemaprestamo.modelo.TipoPrestamo;
 
-/**
- * Acceso a datos de préstamos con SQL directo (INSERT y SELECT).
- * Las reglas de negocio están en la clase Prestamo.
- */
 public class PrestamoDAO {
 
     private static final String SQL_MAXIMO_CODIGO = "SELECT MAX(PrestamosCodigo) FROM Prestamo.Prestamos";
 
-    /** El préstamo nuevo se registra Vigente; el código del estado se busca por su nombre. */
     private static final String SQL_INSERTAR =
             "INSERT INTO Prestamo.Prestamos "
             + "(PrestamosCodigo, ClientesCodigo, TiposPrestamoCodigo, PrestamosMontoSolicitado, "
@@ -51,7 +46,6 @@ public class PrestamoDAO {
             + "LEFT JOIN Prestamo.PoliticaCredito AS p ON p.TiposPrestamoCodigo = t.TiposPrestamoCodigo "
             + "WHERE t.TiposPrestamoCodigo = ?";
 
-    /** Registra el préstamo como Vigente y devuelve el código generado (PR0001, PR0002...). */
     public String registrar(Prestamo prestamo) throws SQLException {
         try (Connection conexion = Conexion.getConnection()) {
             String codigo = Conexion.siguienteCodigo(conexion, SQL_MAXIMO_CODIGO, "PR", 4);
@@ -76,26 +70,20 @@ public class PrestamoDAO {
         }
     }
 
-    /** Lista todos los préstamos. */
     public List<Prestamo> listar() throws SQLException {
         return consultar("", null);
     }
 
-    /** Devuelve el préstamo con ese código, o null si no existe. */
     public Prestamo buscarPorCodigo(String codigoPrestamo) throws SQLException {
         List<Prestamo> encontrados = consultar("WHERE p.PrestamosCodigo = ? ", codigoPrestamo);
         return encontrados.isEmpty() ? null : encontrados.get(0);
     }
 
-    /** Lista los préstamos de un cliente, en cualquier estado. */
     public List<Prestamo> listarPorCliente(String codigoCliente) throws SQLException {
         return consultar("WHERE p.ClientesCodigo = ? ", codigoCliente);
     }
 
-    /**
-     * Devuelve las condiciones de un tipo de préstamo (rango de plazo y TEA, y
-     * límites de monto de la política crediticia), o null si no existe.
-     */
+
     public TipoPrestamo buscarTipoPrestamo(String codigoTipo) throws SQLException {
         try (Connection conexion = Conexion.getConnection();
              PreparedStatement sentencia = conexion.prepareStatement(SQL_TIPO_PRESTAMO)) {

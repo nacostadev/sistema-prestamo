@@ -19,16 +19,7 @@ public class Conexion {
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(URL);
     }
-
-    /**
-     * Calcula el siguiente código de una tabla con formato prefijo + número
-     * (por ejemplo PR0004 -> PR0005). Se ejecuta con la misma conexión del
-     * INSERT para que, dentro de una transacción, vea las filas ya insertadas.
-     *
-     * @param sqlMaximo consulta que devuelve el mayor código actual (SELECT MAX(...))
-     * @param prefijo letras iniciales del código, por ejemplo "PR"
-     * @param cifras cantidad de dígitos del número, por ejemplo 4
-     */
+    
     public static String siguienteCodigo(Connection conexion, String sqlMaximo,
                                          String prefijo, int cifras) throws SQLException {
         int siguiente = 1;
