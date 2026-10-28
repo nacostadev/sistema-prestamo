@@ -2,6 +2,7 @@ package sistemaprestamo.persistencia;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -13,9 +14,9 @@ import sistemaprestamo.modelo.Cliente;
  * Acceso a datos de clientes. Todas las operaciones se ejecutan mediante los
  * procedimientos almacenados del esquema Cliente (sp_Cliente_xxxx), que solo
  * insertan, actualizan y consultan. Las reglas de negocio están en
- * ClienteService.
+ * la clase Cliente (modelo).
  */
-public class ClienteRepository {
+public class ClienteDAO {
 
     private static final String SP_LISTAR = "{call Cliente.sp_Cliente_Listar(?,?)}";
     private static final String SP_REGISTRAR =
@@ -23,6 +24,18 @@ public class ClienteRepository {
     private static final String SP_ACTUALIZAR =
             "{call Cliente.sp_Cliente_Actualizar(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}";
     private static final String SP_DESACTIVAR = "{call Cliente.sp_Cliente_Desactivar(?)}";
+
+    /** Nombre del estado que define un préstamo activo (HU-01 RN-06). */
+    private static final String ESTADO_PRESTAMO_VIGENTE = "Vigente";
+
+    /** Consulta directa: cuenta los préstamos vigentes del cliente (HU-01 RN-06). */
+    private static final String SQL_CONTAR_PRESTAMOS_VIGENTES =
+            "SELECT COUNT(*) FROM Prestamo.Prestamos AS p "
+            + "INNER JOIN Prestamo.EstadosPrestamo AS e ON e.EstadosPrestamoCodigo = p.EstadosPrestamoCodigo "
+            + "WHERE p.ClientesCodigo = ? AND e.EstadosPrestamoNombre = ?";
+
+    /** Error de SQL Server por violar una restricción UNIQUE (documento repetido). */
+    private static final int ERROR_VALOR_DUPLICADO = 2627;
 
     /** Registra el cliente y devuelve el código generado por la base de datos. */
     public String registrar(Cliente cliente) throws SQLException {
@@ -38,7 +51,7 @@ public class ClienteRepository {
             cliente.setCodigo(codigo);
             return codigo;
         } catch (SQLException excepcion) {
-            throw TraductorErrores.traducir(excepcion);
+            throw traducirDocumentoDuplicado(excepcion);
         }
     }
 
@@ -51,19 +64,17 @@ public class ClienteRepository {
             asignarDatos(sentencia, cliente, 2);
             sentencia.execute();
         } catch (SQLException excepcion) {
-            throw TraductorErrores.traducir(excepcion);
+            throw traducirDocumentoDuplicado(excepcion);
         }
     }
 
-    /** Desactiva al cliente; la base de datos lo rechaza si tiene préstamos. */
+    /** Desactiva al cliente (cambia su estado a inactivo). La regla de préstamos se valida antes, en Cliente. */
     public void desactivar(String codigoCliente) throws SQLException {
         try (Connection conexion = Conexion.getConnection();
              CallableStatement sentencia = conexion.prepareCall(SP_DESACTIVAR)) {
 
             sentencia.setString(1, codigoCliente);
             sentencia.execute();
-        } catch (SQLException excepcion) {
-            throw TraductorErrores.traducir(excepcion);
         }
     }
 
@@ -89,6 +100,33 @@ public class ClienteRepository {
         return exactos;
     }
 
+    /** Cantidad de préstamos vigentes del cliente. */
+    public int contarPrestamosVigentes(String codigoCliente) throws SQLException {
+        try (Connection conexion = Conexion.getConnection();
+             PreparedStatement sentencia = conexion.prepareStatement(SQL_CONTAR_PRESTAMOS_VIGENTES)) {
+
+            sentencia.setString(1, codigoCliente);
+            sentencia.setString(2, ESTADO_PRESTAMO_VIGENTE);
+            try (ResultSet resultado = sentencia.executeQuery()) {
+                resultado.next();
+                return resultado.getInt(1);
+            }
+        }
+    }
+
+    /**
+     * HU-01 RN-02: la tabla tiene UNIQUE en el número de documento. Si otro
+     * usuario registró el mismo documento entre la validación y el guardado,
+     * el error se informa como regla de negocio y no como falla técnica.
+     */
+    private SQLException traducirDocumentoDuplicado(SQLException excepcion) {
+        if (excepcion.getErrorCode() == ERROR_VALOR_DUPLICADO) {
+            throw new IllegalArgumentException(
+                    "Ya existe un cliente registrado con ese número de documento.", excepcion);
+        }
+        return excepcion;
+    }
+
     private List<Cliente> consultar(String codigoCliente, String busqueda) throws SQLException {
         List<Cliente> clientes = new ArrayList<>();
         try (Connection conexion = Conexion.getConnection();
@@ -101,8 +139,6 @@ public class ClienteRepository {
                     clientes.add(mapearCliente(resultado));
                 }
             }
-        } catch (SQLException excepcion) {
-            throw TraductorErrores.traducir(excepcion);
         }
         return clientes;
     }

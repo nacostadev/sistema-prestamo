@@ -6,10 +6,7 @@
             <file>file:/D:/Universidad/2026-II/CALIDAD-SOFTWARE/desarollo/SistemaPrestamoFinancieroG4/src/sistemaprestamo/Principal.java</file>
             <file>file:/D:/Universidad/2026-II/CALIDAD-SOFTWARE/desarollo/SistemaPrestamoFinancieroG4/src/sistemaprestamo/controlador/ClienteController.java</file>
             <file>file:/D:/Universidad/2026-II/CALIDAD-SOFTWARE/desarollo/SistemaPrestamoFinancieroG4/src/sistemaprestamo/modelo/Cliente.java</file>
-            <file>file:/D:/Universidad/2026-II/CALIDAD-SOFTWARE/desarollo/SistemaPrestamoFinancieroG4/src/sistemaprestamo/modelo/ClienteService.java</file>
-            <file>file:/D:/Universidad/2026-II/CALIDAD-SOFTWARE/desarollo/SistemaPrestamoFinancieroG4/src/sistemaprestamo/persistencia/ClienteRepository.java</file>
             <file>file:/D:/Universidad/2026-II/CALIDAD-SOFTWARE/desarollo/SistemaPrestamoFinancieroG4/src/sistemaprestamo/persistencia/Conexion.java</file>
-            <file>file:/D:/Universidad/2026-II/CALIDAD-SOFTWARE/desarollo/SistemaPrestamoFinancieroG4/src/sistemaprestamo/vista/FrmCliente.java</file>
         </group>
     </open-files>
 </project-private>

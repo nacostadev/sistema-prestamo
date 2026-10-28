@@ -26,7 +26,8 @@
    - Mantener las relaciones entre las tablas mediante claves primarias
      y foráneas, así como restricciones de integridad.
    - Ejecutar las operaciones de consulta, inserción y actualización
-     solicitadas desde Java mediante procedimientos almacenados (JDBC).
+     solicitadas desde Java mediante JDBC (procedimientos almacenados para
+     cliente y SQL directo para préstamo y cronograma).
    - Gestionar transacciones para garantizar la consistencia de los datos.
 
    JAVA (NETBEANS):
@@ -47,10 +48,11 @@
    3. Se recomienda realizar una copia de seguridad antes de ejecutar.
    4. El script está destinado al desarrollo y pruebas del prototipo.
    5. Los datos iniciales son simulados y se utilizan para realizar pruebas.
-   6. Las operaciones de datos (clientes, préstamos y cronogramas) se
-      ejecutan mediante procedimientos almacenados de tipo CRUD (insertar,
-      actualizar y consultar). Las reglas de negocio, las validaciones y los
-      cálculos financieros se implementan en Java, no en SQL Server.
+   6. Las operaciones de cliente se ejecutan mediante procedimientos
+      almacenados de tipo CRUD (sp_Cliente_xxxx). Los préstamos y los
+      cronogramas se guardan y consultan con SQL directo (INSERT y SELECT)
+      desde Java. Las reglas de negocio, las validaciones y los cálculos
+      financieros se implementan en Java (clases del modelo), no en SQL Server.
 
    ============================================================================
                               INTEGRANTES
@@ -413,7 +415,7 @@ GO
 
 
 /* ============================================================================
-   PROCEDIMIENTOS ALMACENADOS (CRUD)
+   PROCEDIMIENTOS ALMACENADOS DE CLIENTE (CRUD)
    ============================================================================
 
    CRITERIO DE DISEÑO
@@ -422,11 +424,13 @@ GO
    - Las reglas de las historias de usuario (documento duplicado, cliente con
      préstamos, morosidad, límites de monto, plazo y TEA, estado vigente, etc.)
      y los cálculos financieros (TEM, cuota, intereses, amortizaciones, saldos)
-     se implementan en Java (ClienteService, PrestamoService, CronogramaService).
+     se implementan en Java (clases Cliente, Prestamo y Cronograma del modelo).
    - La integridad básica la mantienen las restricciones de las tablas (PK, FK,
      UNIQUE y CHECK).
-   - Los INSERT generan el código siguiente de la tabla (CL01, PR0001, CR0001,
-     DC000001). Es generación de clave, no una regla de negocio.
+   - El INSERT genera el código siguiente de la tabla (CL01). Es generación de
+     clave, no una regla de negocio.
+   - Préstamo y cronograma no usan procedimientos: Java ejecuta INSERT y SELECT
+     directos y genera sus códigos (PR0001, CR0001, DC000001).
    - Se invocan con el nombre completo (esquema.procedimiento).
 
    PROCEDIMIENTOS
@@ -434,14 +438,10 @@ GO
      Cliente.sp_Cliente_Registrar           HU-01 CA-02
      Cliente.sp_Cliente_Actualizar          HU-01 CA-04
      Cliente.sp_Cliente_Desactivar          HU-01 RN-06 (solo cambia el estado)
-     Prestamo.sp_Prestamo_Registrar         HU-02 CA-02
-     Prestamo.sp_Prestamo_Listar            HU-02 / HU-03 CA-01 (consulta)
-     Cronograma.sp_Cronograma_Registrar     HU-03 RN-06 (cabecera)
-     Cronograma.sp_Cronograma_RegistrarDetalle  HU-03 RN-06 y RN-07 (una cuota)
 
    SUPUESTOS (las HU no los definen; se aplican en Java):
-   - "Préstamos activos" (HU-01 RN-06): al no existir estados como Cancelado o
-     Pagado, no se permite desactivar un cliente que tenga CUALQUIER préstamo.
+   - "Préstamos activos" (HU-01 RN-06): según el equipo, es un préstamo en estado
+     'Vigente'. No se permite desactivar un cliente que tenga un préstamo vigente.
    - Morosidad (HU-02 RN-06): estados 'Moroso' e 'Incumplimiento'.
    - Todo préstamo nuevo se registra en estado 'Vigente'.
    - Cronograma (HU-03 RN-09): ninguna HU permite cambiar las condiciones de un
@@ -601,156 +601,6 @@ BEGIN
     UPDATE Cliente.Clientes
     SET ClientesEstado = N'I'
     WHERE ClientesCodigo = @ClientesCodigo;
-END
-GO
-
-
--- ============================================================================
--- HU-02: REGISTRAR PRÉSTAMO FINANCIERO
--- ============================================================================
-
--- Inserta un préstamo con el estado indicado y devuelve su código.
-CREATE PROCEDURE Prestamo.sp_Prestamo_Registrar
-    @ClientesCodigo         NCHAR(4),
-    @TiposPrestamoCodigo    NCHAR(4),
-    @MontoSolicitado        DECIMAL(18,2),
-    @PlazoCuotas            INT,
-    @TEA                    DECIMAL(6,4),
-    @ModalidadesPagoCodigo  NCHAR(4),
-    @FechaDesembolso        DATE,
-    @MonedasCodigo          NCHAR(4),
-    @GarantiasCodigo        NCHAR(4)      = NULL,
-    @Observaciones          NVARCHAR(255) = NULL,
-    @DescripcionDestino     NVARCHAR(255) = NULL,
-    @EstadosPrestamoCodigo  NCHAR(4),
-    @PrestamosCodigo        NCHAR(6) OUTPUT
-AS
-BEGIN
-    SET NOCOUNT ON;
-
-    DECLARE @Siguiente INT;
-
-    SELECT @Siguiente = ISNULL(MAX(CAST(SUBSTRING(PrestamosCodigo, 3, 4) AS INT)), 0) + 1
-    FROM Prestamo.Prestamos;
-
-    SET @PrestamosCodigo = N'PR' + RIGHT(N'0000' + CAST(@Siguiente AS NVARCHAR(5)), 4);
-
-    INSERT INTO Prestamo.Prestamos
-        (PrestamosCodigo, ClientesCodigo, TiposPrestamoCodigo,
-         PrestamosMontoSolicitado, PrestamosPlazoCuotas, PrestamosTEA,
-         ModalidadesPagoCodigo, PrestamosFechaDesembolso, MonedasCodigo,
-         GarantiasCodigo, PrestamosObservaciones, PrestamosDescripcionDestino,
-         EstadosPrestamoCodigo)
-    VALUES
-        (@PrestamosCodigo, @ClientesCodigo, @TiposPrestamoCodigo,
-         @MontoSolicitado, @PlazoCuotas, @TEA,
-         @ModalidadesPagoCodigo, @FechaDesembolso, @MonedasCodigo,
-         @GarantiasCodigo, @Observaciones, @DescripcionDestino,
-         @EstadosPrestamoCodigo);
-END
-GO
-
-
--- Consulta préstamos. Sin parámetros devuelve todos; @PrestamosCodigo trae uno
--- y @ClientesCodigo trae los de un cliente.
-CREATE PROCEDURE Prestamo.sp_Prestamo_Listar
-    @PrestamosCodigo NCHAR(6) = NULL,
-    @ClientesCodigo  NCHAR(4) = NULL
-AS
-BEGIN
-    SET NOCOUNT ON;
-
-    SELECT
-        p.PrestamosCodigo,
-        p.ClientesCodigo,
-        c.ClientesApellidos,
-        c.ClientesNombres,
-        p.TiposPrestamoCodigo,
-        t.TiposPrestamoNombre,
-        p.PrestamosMontoSolicitado,
-        p.PrestamosPlazoCuotas,
-        p.PrestamosTEA,
-        p.ModalidadesPagoCodigo,
-        mp.ModalidadesPagoNombre,
-        p.PrestamosFechaDesembolso,
-        p.MonedasCodigo,
-        m.MonedasSimbolo,
-        p.GarantiasCodigo,
-        p.PrestamosObservaciones,
-        p.PrestamosDescripcionDestino,
-        p.EstadosPrestamoCodigo,
-        e.EstadosPrestamoNombre
-    FROM Prestamo.Prestamos AS p
-    INNER JOIN Cliente.Clientes AS c
-        ON c.ClientesCodigo = p.ClientesCodigo
-    INNER JOIN Prestamo.TiposPrestamo AS t
-        ON t.TiposPrestamoCodigo = p.TiposPrestamoCodigo
-    INNER JOIN Prestamo.ModalidadesPago AS mp
-        ON mp.ModalidadesPagoCodigo = p.ModalidadesPagoCodigo
-    INNER JOIN Prestamo.Monedas AS m
-        ON m.MonedasCodigo = p.MonedasCodigo
-    INNER JOIN Prestamo.EstadosPrestamo AS e
-        ON e.EstadosPrestamoCodigo = p.EstadosPrestamoCodigo
-    WHERE (@PrestamosCodigo IS NULL OR p.PrestamosCodigo = @PrestamosCodigo)
-      AND (@ClientesCodigo  IS NULL OR p.ClientesCodigo  = @ClientesCodigo)
-    ORDER BY p.PrestamosCodigo;
-END
-GO
-
-
--- ============================================================================
--- HU-03: GENERAR CRONOGRAMA DE PAGOS
--- ============================================================================
-
--- Inserta la cabecera del cronograma asociada al préstamo y devuelve su código.
-CREATE PROCEDURE Cronograma.sp_Cronograma_Registrar
-    @PrestamosCodigo    NCHAR(6),
-    @CronogramasCodigo  NCHAR(6) OUTPUT
-AS
-BEGIN
-    SET NOCOUNT ON;
-
-    DECLARE @Siguiente INT;
-
-    SELECT @Siguiente = ISNULL(MAX(CAST(SUBSTRING(CronogramasCodigo, 3, 4) AS INT)), 0) + 1
-    FROM Cronograma.Cronogramas;
-
-    SET @CronogramasCodigo = N'CR' + RIGHT(N'0000' + CAST(@Siguiente AS NVARCHAR(5)), 4);
-
-    INSERT INTO Cronograma.Cronogramas (CronogramasCodigo, PrestamosCodigo)
-    VALUES (@CronogramasCodigo, @PrestamosCodigo);
-END
-GO
-
-
--- Inserta una cuota del cronograma con los importes ya calculados por Java.
-CREATE PROCEDURE Cronograma.sp_Cronograma_RegistrarDetalle
-    @CronogramasCodigo  NCHAR(6),
-    @NumeroCuota        INT,
-    @FechaVencimiento   DATE,
-    @SaldoAnterior      DECIMAL(18,2),
-    @Interes            DECIMAL(18,2),
-    @Amortizacion       DECIMAL(18,2),
-    @Cuota              DECIMAL(18,2),
-    @SaldoPendiente     DECIMAL(18,2)
-AS
-BEGIN
-    SET NOCOUNT ON;
-
-    DECLARE @Siguiente INT;
-
-    SELECT @Siguiente = ISNULL(MAX(CAST(SUBSTRING(DetalleCronogramaCodigo, 3, 6) AS INT)), 0) + 1
-    FROM Cronograma.DetalleCronograma;
-
-    INSERT INTO Cronograma.DetalleCronograma
-        (DetalleCronogramaCodigo, CronogramasCodigo, DetalleNumeroCuota,
-         DetalleFechaVencimiento, DetalleSaldoAnterior, DetalleInteres,
-         DetalleAmortizacion, DetalleCuota, DetalleSaldoPendiente)
-    VALUES
-        (N'DC' + RIGHT(N'000000' + CAST(@Siguiente AS NVARCHAR(7)), 6),
-         @CronogramasCodigo, @NumeroCuota,
-         @FechaVencimiento, @SaldoAnterior, @Interes,
-         @Amortizacion, @Cuota, @SaldoPendiente);
 END
 GO
 
