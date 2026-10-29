@@ -20,12 +20,8 @@ public class ClienteDAO {
             "{call Cliente.sp_Cliente_Actualizar(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}";
     private static final String SP_DESACTIVAR = "{call Cliente.sp_Cliente_Desactivar(?)}";
 
-    private static final String ESTADO_PRESTAMO_VIGENTE = "Vigente";
-
-    private static final String SQL_CONTAR_PRESTAMOS_VIGENTES =
-            "SELECT COUNT(*) FROM Prestamo.Prestamos AS p "
-            + "INNER JOIN Prestamo.EstadosPrestamo AS e ON e.EstadosPrestamoCodigo = p.EstadosPrestamoCodigo "
-            + "WHERE p.ClientesCodigo = ? AND e.EstadosPrestamoNombre = ?";
+    private static final String SQL_ESTADOS_PRESTAMOS =
+            "SELECT EstadosPrestamoCodigo FROM Prestamo.Prestamos WHERE ClientesCodigo = ?";
 
     private static final int ERROR_VALOR_DUPLICADO = 2627;
 
@@ -85,17 +81,23 @@ public class ClienteDAO {
         return exactos;
     }
 
-    public int contarPrestamosVigentes(String codigoCliente) throws SQLException {
+    /**
+     * Código de estado de cada préstamo del cliente. La regla de qué estados impiden
+     * desactivar al cliente se aplica en Java (Cliente.validarPuedeDesactivarse).
+     */
+    public List<String> listarEstadosPrestamos(String codigoCliente) throws SQLException {
+        List<String> estados = new ArrayList<>();
         try (Connection conexion = Conexion.getConnection();
-             PreparedStatement sentencia = conexion.prepareStatement(SQL_CONTAR_PRESTAMOS_VIGENTES)) {
+             PreparedStatement sentencia = conexion.prepareStatement(SQL_ESTADOS_PRESTAMOS)) {
 
             sentencia.setString(1, codigoCliente);
-            sentencia.setString(2, ESTADO_PRESTAMO_VIGENTE);
             try (ResultSet resultado = sentencia.executeQuery()) {
-                resultado.next();
-                return resultado.getInt(1);
+                while (resultado.next()) {
+                    estados.add(resultado.getString(1).trim());
+                }
             }
         }
+        return estados;
     }
 
 

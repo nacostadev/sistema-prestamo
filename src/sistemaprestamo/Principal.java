@@ -1,21 +1,26 @@
 package sistemaprestamo;
 
+import com.formdev.flatlaf.FlatLightLaf;
 import javax.swing.SwingUtilities;
-import sistemaprestamo.controlador.ClienteController;
-import sistemaprestamo.vista.FrmClientes;
+import javax.swing.UIManager;
+import sistemaprestamo.controlador.LoginController;
+import sistemaprestamo.vista.FrmLogin;
 
 /**
  * Punto de entrada de la aplicación de escritorio.
- * Enlaza la vista con su controlador.
+ * Abre el login; al iniciar sesión, LoginController abre el menú principal.
  */
 public class Principal {
 
     public static void main(String[] args) {
+        FlatLightLaf.setup();
+        UIManager.put("TextComponent.arc", 8);
+        UIManager.put("Button.arc", 8);
+
         SwingUtilities.invokeLater(() -> {
-            FrmClientes vista = new FrmClientes();
-            ClienteController controlador = new ClienteController(vista);
+            FrmLogin vista = new FrmLogin();
+            LoginController controlador = new LoginController(vista);
             vista.setControlador(controlador);
-            controlador.iniciar();
             vista.setVisible(true);
         });
     }

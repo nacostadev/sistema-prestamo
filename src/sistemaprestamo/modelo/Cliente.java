@@ -24,6 +24,18 @@ public class Cliente {
             new ItemCatalogo("EC04", "Viudo(a)"),
             new ItemCatalogo("EC05", "Conviviente"));
 
+    /**
+     * Estados de préstamo que impiden desactivar al cliente.
+     * HU-01 RN-06: préstamos activos o solicitudes de crédito en evaluación.
+     * HU-02 RN-06 llama "activos" a los préstamos en morosidad o incumplimiento,
+     * por eso Vigente, Moroso e Incumplimiento cuentan como activos.
+     */
+    public static final List<String> ESTADOS_QUE_IMPIDEN_DESACTIVAR = List.of(
+            "EP01",   // Vigente
+            "EP02",   // Moroso
+            "EP03",   // Incumplimiento
+            "EP04");  // En evaluación
+
     private static final int EDAD_MINIMA = 18;
 
     private static final String EXPRESION_DNI = "^\\d{8}$";
@@ -255,10 +267,14 @@ public class Cliente {
     }
 
 
-    public void validarPuedeDesactivarse(int cantidadPrestamosVigentes) {
-        if (cantidadPrestamosVigentes > 0) {
-            throw new IllegalArgumentException(
-                    "No se puede desactivar al cliente porque tiene préstamos vigentes.");
+    /** @param codigosEstadoPrestamos código de estado de cada préstamo del cliente (EP01...EP04) */
+    public void validarPuedeDesactivarse(List<String> codigosEstadoPrestamos) {
+        for (String codigoEstado : codigosEstadoPrestamos) {
+            if (ESTADOS_QUE_IMPIDEN_DESACTIVAR.contains(codigoEstado)) {
+                throw new IllegalArgumentException(
+                        "No se puede desactivar al cliente porque tiene préstamos activos "
+                        + "o solicitudes de crédito en evaluación.");
+            }
         }
     }
 
