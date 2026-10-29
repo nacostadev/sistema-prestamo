@@ -12,6 +12,12 @@ public class FrmLogin extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FrmLogin.class.getName());
 
+    private static final String TEXTO_USUARIO = "Ingresa tu usuario";
+    private static final String TEXTO_CLAVE = "Ingresa tu contraseña";
+
+    private sistemaprestamo.controlador.LoginController controlador;
+    private boolean claveVisible = false;
+
     /**
      * Creates new form FrmClientes
      */
@@ -56,7 +62,56 @@ public FrmLogin() {
     jPasswordField1.setEchoChar((char) 0);
     jPasswordField1.setText("Ingresa tu contraseña");
     jPasswordField1.setForeground(java.awt.Color.GRAY);
+
+    // Enter en la contraseña inicia sesión
+    jPasswordField1.addActionListener(e -> iniciarSesion());
 }
+
+    // ---------------------------------------------------------------------
+    // Métodos que usa LoginController
+    // ---------------------------------------------------------------------
+
+    public void setControlador(sistemaprestamo.controlador.LoginController controlador) {
+        this.controlador = controlador;
+    }
+
+    private void iniciarSesion() {
+        if (controlador != null) {
+            controlador.iniciarSesion();
+        }
+    }
+
+    /** Usuario escrito; vacío si solo se ve el texto de ejemplo. */
+    public String obtenerUsuario() {
+        String texto = txtUsuario.getText().trim();
+        return texto.equals(TEXTO_USUARIO) ? "" : texto;
+    }
+
+    /** Contraseña escrita; vacía si solo se ve el texto de ejemplo. */
+    public String obtenerClave() {
+        String clave = new String(jPasswordField1.getPassword());
+        return clave.equals(TEXTO_CLAVE) ? "" : clave;
+    }
+
+    public void limpiarClave() {
+        jPasswordField1.setText("");
+        jPasswordField1.setEchoChar(claveVisible ? (char) 0 : '\u2022');
+        jPasswordField1.setForeground(java.awt.Color.BLACK);
+        jPasswordField1.requestFocusInWindow();
+    }
+
+    public void mostrarMensaje(String mensaje, String titulo, int tipo) {
+        javax.swing.JOptionPane.showMessageDialog(this, mensaje, titulo, tipo);
+    }
+
+    private void alternarVisibilidadClave() {
+        if (String.valueOf(jPasswordField1.getPassword()).equals(TEXTO_CLAVE)) {
+            return; // todavía se ve el texto de ejemplo
+        }
+        claveVisible = !claveVisible;
+        jPasswordField1.setEchoChar(claveVisible ? (char) 0 : '\u2022');
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -200,10 +255,12 @@ public FrmLogin() {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
+         iniciarSesion();
+        
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void txtUsuarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtUsuarioActionPerformed
-
+    jPasswordField1.requestFocusInWindow();
     }//GEN-LAST:event_txtUsuarioActionPerformed
 
     private void txtUsuarioFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtUsuarioFocusGained
@@ -224,6 +281,7 @@ public FrmLogin() {
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         // TODO add your handling code here:
+    alternarVisibilidadClave();
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jPasswordField1FocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_jPasswordField1FocusGained
@@ -232,7 +290,7 @@ public FrmLogin() {
         .equals("Ingresa tu contraseña")) {
 
     jPasswordField1.setText("");
-    jPasswordField1.setEchoChar('\u2022');
+    jPasswordField1.setEchoChar(claveVisible ? (char) 0 : '\u2022');
     jPasswordField1.setForeground(java.awt.Color.BLACK);
 }
     }//GEN-LAST:event_jPasswordField1FocusGained

@@ -30,10 +30,13 @@ public class FrmClientes extends javax.swing.JFrame {
     };
 
     private ClienteController controlador;
+    private javax.swing.JTextField txtConyuge;      // RN-04 (opcional)
+    private javax.swing.JTextField txtReferencias;  // RN-04 (opcional)
     private List<Cliente> clientesMostrados = new ArrayList<>();
 
     public FrmClientes() {
         initComponents();
+        agregarCamposOpcionales();
         tblClientes.setModel(modeloTabla);
         tblClientes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         txtCodigo.setEditable(false); // lo genera la base de datos
@@ -43,6 +46,46 @@ public class FrmClientes extends javax.swing.JFrame {
 
     public void setControlador(ClienteController controlador) {
         this.controlador = controlador;
+    }
+
+    /**
+     * RN-04: datos del cónyuge y referencias personales (campos opcionales).
+     * Se agregan por código, fuera del bloque generado, para que el editor visual no los borre.
+     */
+    private void agregarCamposOpcionales() {
+        txtConyuge = new javax.swing.JTextField();
+        txtReferencias = new javax.swing.JTextField();
+        javax.swing.JLabel lblConyuge = new javax.swing.JLabel("Cónyuge (opcional)");
+        javax.swing.JLabel lblReferencias = new javax.swing.JLabel("Referencias personales (opcional)");
+        lblConyuge.setFont(jLabel16.getFont());
+        lblReferencias.setFont(jLabel16.getFont());
+
+        // Los botones pasan a la fila 10 para dejar las filas 8 y 9 a los nuevos campos
+        java.awt.GridBagLayout diseno = (java.awt.GridBagLayout) jPanel8.getLayout();
+        java.awt.GridBagConstraints botones = diseno.getConstraints(jPanel5);
+        botones.gridy = 10;
+        diseno.setConstraints(jPanel5, botones);
+
+        jPanel8.add(lblConyuge, restriccion(0, 8, false));
+        jPanel8.add(txtConyuge, restriccion(0, 9, true));
+        jPanel8.add(lblReferencias, restriccion(2, 8, false));
+        jPanel8.add(txtReferencias, restriccion(2, 9, true));
+    }
+
+    private java.awt.GridBagConstraints restriccion(int columna, int fila, boolean esCampo) {
+        java.awt.GridBagConstraints c = new java.awt.GridBagConstraints();
+        c.gridx = columna;
+        c.gridy = fila;
+        c.gridwidth = 2;
+        c.anchor = java.awt.GridBagConstraints.WEST;
+        c.weightx = 2.0;
+        if (esCampo) {
+            c.fill = java.awt.GridBagConstraints.HORIZONTAL;
+            c.insets = new java.awt.Insets(0, 6, 4, 6);
+        } else {
+            c.insets = new java.awt.Insets(6, 6, 2, 6);
+        }
+        return c;
     }
 
     private void ajustarATamanioDePantalla() {
@@ -61,7 +104,6 @@ public class FrmClientes extends javax.swing.JFrame {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-
         java.awt.GridBagConstraints gridBagConstraints;
 
         jPanel1 = new javax.swing.JPanel();
@@ -114,13 +156,18 @@ public class FrmClientes extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         tblClientes = new javax.swing.JTable();
 
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Gestión de Clientes");
+
         jPanel1.setBackground(new java.awt.Color(240, 244, 248));
         jPanel1.setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 16, 16, 16));
         jPanel1.setLayout(new java.awt.BorderLayout(0, 12));
+
         panelHeader.setBackground(new java.awt.Color(24, 69, 131));
         panelHeader.setBorder(javax.swing.BorderFactory.createEmptyBorder(14, 24, 14, 24));
         panelHeader.setLayout(new java.awt.GridBagLayout());
-        jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 18));
+
+        jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(255, 255, 255));
         jLabel1.setText("REGISTRO DE GESTION DE CLIENTES");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -130,7 +177,8 @@ public class FrmClientes extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         panelHeader.add(jLabel1, gridBagConstraints);
-        jLabel2.setFont(new java.awt.Font("Segoe UI", 0, 11));
+
+        jLabel2.setFont(new java.awt.Font("Segoe UI", 0, 11)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(255, 255, 255));
         jLabel2.setText("Registre, consulte, actualice o desactive la información de los clientes");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -138,16 +186,19 @@ public class FrmClientes extends javax.swing.JFrame {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 0);
         panelHeader.add(jLabel2, gridBagConstraints);
+
         jPanel1.add(panelHeader, java.awt.BorderLayout.NORTH);
+
         jPanel4.setOpaque(false);
         jPanel4.setLayout(new java.awt.BorderLayout(0, 12));
+
         jPanel8.setBackground(new java.awt.Color(255, 255, 255));
         jPanel8.setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 16, 12, 16));
         jPanel8.setLayout(new java.awt.GridBagLayout());
+
         jLabel4.setText("Código");
-        jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 12));
+        jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -163,8 +214,9 @@ public class FrmClientes extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 6);
         jPanel8.add(txtCodigo, gridBagConstraints);
+
         jLabel5.setText("Tipo de documento");
-        jLabel5.setFont(new java.awt.Font("Segoe UI", 1, 12));
+        jLabel5.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -172,6 +224,7 @@ public class FrmClientes extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 2, 6);
         jPanel8.add(jLabel5, gridBagConstraints);
+
         cboTipoDocumento.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "<<Seleccionar>>", "DNI", "Pasaporte", "Carné de Extranjería" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -181,8 +234,9 @@ public class FrmClientes extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 6);
         jPanel8.add(cboTipoDocumento, gridBagConstraints);
+
         jLabel6.setText("Número de documento");
-        jLabel6.setFont(new java.awt.Font("Segoe UI", 1, 12));
+        jLabel6.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
@@ -198,8 +252,9 @@ public class FrmClientes extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 6);
         jPanel8.add(txtNumeroDocumento, gridBagConstraints);
+
         jLabel7.setText("Fecha de nacimiento");
-        jLabel7.setFont(new java.awt.Font("Segoe UI", 1, 12));
+        jLabel7.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 0;
@@ -215,8 +270,9 @@ public class FrmClientes extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 6);
         jPanel8.add(dcFechaNacimiento, gridBagConstraints);
+
         jLabel8.setText("Nombres");
-        jLabel8.setFont(new java.awt.Font("Segoe UI", 1, 12));
+        jLabel8.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -232,8 +288,9 @@ public class FrmClientes extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 6);
         jPanel8.add(txtNombres, gridBagConstraints);
+
         jLabel9.setText("Apellidos");
-        jLabel9.setFont(new java.awt.Font("Segoe UI", 1, 12));
+        jLabel9.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -249,8 +306,9 @@ public class FrmClientes extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 6);
         jPanel8.add(txtApellidos, gridBagConstraints);
+
         jLabel10.setText("Teléfono");
-        jLabel10.setFont(new java.awt.Font("Segoe UI", 1, 12));
+        jLabel10.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
@@ -266,8 +324,9 @@ public class FrmClientes extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 6);
         jPanel8.add(txtTelefono, gridBagConstraints);
+
         jLabel11.setText("Estado civil");
-        jLabel11.setFont(new java.awt.Font("Segoe UI", 1, 12));
+        jLabel11.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 2;
@@ -275,6 +334,7 @@ public class FrmClientes extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 2, 6);
         jPanel8.add(jLabel11, gridBagConstraints);
+
         cboEstadoCivil.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "<<Seleccionar>>", "Soltero(a)", "Casado(a)", "Divorciado(a)", "Viudo(a)", "Conviviente" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
@@ -284,8 +344,9 @@ public class FrmClientes extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 6);
         jPanel8.add(cboEstadoCivil, gridBagConstraints);
+
         jLabel12.setText("Dirección");
-        jLabel12.setFont(new java.awt.Font("Segoe UI", 1, 12));
+        jLabel12.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -301,8 +362,9 @@ public class FrmClientes extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 6);
         jPanel8.add(txtDireccion, gridBagConstraints);
+
         jLabel13.setText("Correo electrónico");
-        jLabel13.setFont(new java.awt.Font("Segoe UI", 1, 12));
+        jLabel13.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -318,8 +380,9 @@ public class FrmClientes extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 6);
         jPanel8.add(txtCorreo, gridBagConstraints);
+
         jLabel14.setText("Condición laboral");
-        jLabel14.setFont(new java.awt.Font("Segoe UI", 1, 12));
+        jLabel14.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 4;
@@ -335,8 +398,9 @@ public class FrmClientes extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 6);
         jPanel8.add(txtCondicionLaboral, gridBagConstraints);
+
         jLabel15.setText("Ingresos mensuales");
-        jLabel15.setFont(new java.awt.Font("Segoe UI", 1, 12));
+        jLabel15.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 4;
@@ -352,8 +416,9 @@ public class FrmClientes extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 6);
         jPanel8.add(txtNivelIngresos, gridBagConstraints);
+
         jLabel16.setText("Estado del cliente");
-        jLabel16.setFont(new java.awt.Font("Segoe UI", 1, 12));
+        jLabel16.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -361,6 +426,7 @@ public class FrmClientes extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 2, 6);
         jPanel8.add(jLabel16, gridBagConstraints);
+
         cboEstado.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "<<Seleccionar>>", "Activo", "Inactivo" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -370,8 +436,9 @@ public class FrmClientes extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 6);
         jPanel8.add(cboEstado, gridBagConstraints);
+
         jLabel17.setText("Observaciones");
-        jLabel17.setFont(new java.awt.Font("Segoe UI", 1, 12));
+        jLabel17.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
@@ -380,11 +447,13 @@ public class FrmClientes extends javax.swing.JFrame {
         gridBagConstraints.weightx = 3.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 2, 6);
         jPanel8.add(jLabel17, gridBagConstraints);
+
         txtObservaciones.setColumns(20);
         txtObservaciones.setLineWrap(true);
         txtObservaciones.setRows(3);
         txtObservaciones.setWrapStyleWord(true);
         jScrollPane2.setViewportView(txtObservaciones);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 7;
@@ -394,11 +463,13 @@ public class FrmClientes extends javax.swing.JFrame {
         gridBagConstraints.weightx = 3.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 6);
         jPanel8.add(jScrollPane2, gridBagConstraints);
+
         jPanel5.setOpaque(false);
         jPanel5.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 12, 0));
+
         btnNuevo.setBackground(new java.awt.Color(13, 71, 161));
         btnNuevo.setForeground(new java.awt.Color(255, 255, 255));
-        btnNuevo.setFont(new java.awt.Font("Segoe UI", 1, 12));
+        btnNuevo.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnNuevo.setText("Nuevo");
         btnNuevo.setFocusPainted(false);
         btnNuevo.setPreferredSize(new java.awt.Dimension(110, 34));
@@ -408,9 +479,10 @@ public class FrmClientes extends javax.swing.JFrame {
             }
         });
         jPanel5.add(btnNuevo);
+
         btnGuardar.setBackground(new java.awt.Color(0, 153, 102));
         btnGuardar.setForeground(new java.awt.Color(255, 255, 255));
-        btnGuardar.setFont(new java.awt.Font("Segoe UI", 1, 12));
+        btnGuardar.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnGuardar.setText("Guardar");
         btnGuardar.setFocusPainted(false);
         btnGuardar.setPreferredSize(new java.awt.Dimension(110, 34));
@@ -420,9 +492,9 @@ public class FrmClientes extends javax.swing.JFrame {
             }
         });
         jPanel5.add(btnGuardar);
-        btnLimpiar.setBackground(new java.awt.Color(255, 255, 255));
+
         btnLimpiar.setForeground(new java.awt.Color(13, 71, 161));
-        btnLimpiar.setFont(new java.awt.Font("Segoe UI", 1, 12));
+        btnLimpiar.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnLimpiar.setText("Limpiar");
         btnLimpiar.setFocusPainted(false);
         btnLimpiar.setPreferredSize(new java.awt.Dimension(110, 34));
@@ -433,6 +505,7 @@ public class FrmClientes extends javax.swing.JFrame {
             }
         });
         jPanel5.add(btnLimpiar);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 8;
@@ -442,17 +515,23 @@ public class FrmClientes extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 0);
         jPanel8.add(jPanel5, gridBagConstraints);
+
         jPanel4.add(jPanel8, java.awt.BorderLayout.NORTH);
+
         jPanel2.setBackground(new java.awt.Color(255, 255, 255));
         jPanel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 16, 12, 16));
         jPanel2.setLayout(new java.awt.BorderLayout(0, 8));
+
         jPanel6.setOpaque(false);
         jPanel6.setLayout(new java.awt.BorderLayout(0, 8));
-        jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 16));
+
+        jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 16)); // NOI18N
         jLabel3.setText("Listado de Clientes");
         jPanel6.add(jLabel3, java.awt.BorderLayout.NORTH);
+
         jPanel3.setOpaque(false);
         jPanel3.setLayout(new java.awt.GridBagLayout());
+
         txtBusqueda.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtBusquedaActionPerformed(evt);
@@ -462,13 +541,13 @@ public class FrmClientes extends javax.swing.JFrame {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.CENTER;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
         jPanel3.add(txtBusqueda, gridBagConstraints);
+
         btnBuscar.setBackground(new java.awt.Color(13, 71, 161));
         btnBuscar.setForeground(new java.awt.Color(255, 255, 255));
-        btnBuscar.setFont(new java.awt.Font("Segoe UI", 1, 12));
+        btnBuscar.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnBuscar.setText("Buscar");
         btnBuscar.setFocusPainted(false);
         btnBuscar.setPreferredSize(new java.awt.Dimension(110, 34));
@@ -480,12 +559,11 @@ public class FrmClientes extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.CENTER;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 24);
         jPanel3.add(btnBuscar, gridBagConstraints);
-        btnEditar.setBackground(new java.awt.Color(255, 255, 255));
+
         btnEditar.setForeground(new java.awt.Color(13, 71, 161));
-        btnEditar.setFont(new java.awt.Font("Segoe UI", 1, 12));
+        btnEditar.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnEditar.setText("Editar");
         btnEditar.setFocusPainted(false);
         btnEditar.setPreferredSize(new java.awt.Dimension(110, 34));
@@ -498,12 +576,12 @@ public class FrmClientes extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.CENTER;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
         jPanel3.add(btnEditar, gridBagConstraints);
+
         btnDesactivar.setBackground(new java.awt.Color(204, 0, 0));
         btnDesactivar.setForeground(new java.awt.Color(255, 255, 255));
-        btnDesactivar.setFont(new java.awt.Font("Segoe UI", 1, 12));
+        btnDesactivar.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnDesactivar.setText("Desactivar");
         btnDesactivar.setFocusPainted(false);
         btnDesactivar.setPreferredSize(new java.awt.Dimension(110, 34));
@@ -515,16 +593,21 @@ public class FrmClientes extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.CENTER;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 0);
         jPanel3.add(btnDesactivar, gridBagConstraints);
+
         jPanel6.add(jPanel3, java.awt.BorderLayout.SOUTH);
+
         jPanel2.add(jPanel6, java.awt.BorderLayout.NORTH);
+
         jScrollPane1.setPreferredSize(new java.awt.Dimension(600, 180));
+
         tblClientes.setRowHeight(22);
         jScrollPane1.setViewportView(tblClientes);
+
         jPanel2.add(jScrollPane1, java.awt.BorderLayout.CENTER);
+
         jPanel4.add(jPanel2, java.awt.BorderLayout.CENTER);
+
         jPanel1.add(jPanel4, java.awt.BorderLayout.CENTER);
 
         getContentPane().add(jPanel1, java.awt.BorderLayout.CENTER);
@@ -587,6 +670,8 @@ public class FrmClientes extends javax.swing.JFrame {
         cliente.setCorreo(txtCorreo.getText());
         cliente.setCondicionLaboral(txtCondicionLaboral.getText());
         cliente.setNivelIngresos(leerMonto(txtNivelIngresos.getText()));
+        cliente.setNombreConyuge(txtConyuge.getText());
+        cliente.setReferenciasPersonales(txtReferencias.getText());
         cliente.setObservaciones(txtObservaciones.getText());
         return cliente;
     }
@@ -634,6 +719,8 @@ public class FrmClientes extends javax.swing.JFrame {
         txtCondicionLaboral.setText("");
         txtNivelIngresos.setText("");
         cboEstado.setSelectedIndex(0);
+        txtConyuge.setText("");
+        txtReferencias.setText("");
         txtObservaciones.setText("");
         tblClientes.clearSelection();
         txtNumeroDocumento.requestFocusInWindow();
@@ -675,6 +762,8 @@ public class FrmClientes extends javax.swing.JFrame {
         txtCondicionLaboral.setText(cliente.getCondicionLaboral());
         txtNivelIngresos.setText(cliente.getNivelIngresos().toPlainString());
         cboEstado.setSelectedIndex(cliente.estaActivo() ? 1 : 2);
+        txtConyuge.setText(cliente.getNombreConyuge() == null ? "" : cliente.getNombreConyuge());
+        txtReferencias.setText(cliente.getReferenciasPersonales() == null ? "" : cliente.getReferenciasPersonales());
         txtObservaciones.setText(cliente.getObservaciones() == null ? "" : cliente.getObservaciones());
     }
 

@@ -3,6 +3,7 @@ package sistemaprestamo.modelo;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.List;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -121,15 +122,18 @@ public class ClienteTest {
         assertEquals(expResult, result);
     }
 
+    private static final String MENSAJE_NO_DESACTIVAR =
+            "No se puede desactivar al cliente porque tiene préstamos activos o solicitudes de crédito en evaluación.";
+
     /**
      * Test of validarPuedeDesactivarse method, of class Cliente.
      */
     @Test
-    public void testValidarPuedeDesactivarse_caso1_sinPrestamosVigentes() {
+    public void testValidarPuedeDesactivarse_caso1_sinPrestamos() {
         System.out.println("validarPuedeDesactivarse - caso 1");
         Cliente cliente = crearClienteValido();
         String expResult = OK;
-        String result = ejecutar(() -> cliente.validarPuedeDesactivarse(0));
+        String result = ejecutar(() -> cliente.validarPuedeDesactivarse(Collections.<String>emptyList()));
         assertEquals(expResult, result);
     }
 
@@ -137,11 +141,11 @@ public class ClienteTest {
      * Test of validarPuedeDesactivarse method, of class Cliente.
      */
     @Test
-    public void testValidarPuedeDesactivarse_caso2_conUnPrestamoVigente() {
+    public void testValidarPuedeDesactivarse_caso2_prestamoVigente() {
         System.out.println("validarPuedeDesactivarse - caso 2");
         Cliente cliente = crearClienteValido();
-        String expResult = "No se puede desactivar al cliente porque tiene préstamos vigentes.";
-        String result = ejecutar(() -> cliente.validarPuedeDesactivarse(1));
+        String expResult = MENSAJE_NO_DESACTIVAR;
+        String result = ejecutar(() -> cliente.validarPuedeDesactivarse(List.of("EP01")));
         assertEquals(expResult, result);
     }
 
@@ -149,11 +153,59 @@ public class ClienteTest {
      * Test of validarPuedeDesactivarse method, of class Cliente.
      */
     @Test
-    public void testValidarPuedeDesactivarse_caso3_conVariosPrestamosVigentes() {
+    public void testValidarPuedeDesactivarse_caso3_prestamoMoroso() {
         System.out.println("validarPuedeDesactivarse - caso 3");
         Cliente cliente = crearClienteValido();
-        String expResult = "No se puede desactivar al cliente porque tiene préstamos vigentes.";
-        String result = ejecutar(() -> cliente.validarPuedeDesactivarse(3));
+        String expResult = MENSAJE_NO_DESACTIVAR;
+        String result = ejecutar(() -> cliente.validarPuedeDesactivarse(List.of("EP02")));
+        assertEquals(expResult, result);
+    }
+
+    /**
+     * Test of validarPuedeDesactivarse method, of class Cliente.
+     */
+    @Test
+    public void testValidarPuedeDesactivarse_caso4_prestamoIncumplimiento() {
+        System.out.println("validarPuedeDesactivarse - caso 4");
+        Cliente cliente = crearClienteValido();
+        String expResult = MENSAJE_NO_DESACTIVAR;
+        String result = ejecutar(() -> cliente.validarPuedeDesactivarse(List.of("EP03")));
+        assertEquals(expResult, result);
+    }
+
+    /**
+     * Test of validarPuedeDesactivarse method, of class Cliente.
+     */
+    @Test
+    public void testValidarPuedeDesactivarse_caso5_solicitudEnEvaluacion() {
+        System.out.println("validarPuedeDesactivarse - caso 5");
+        Cliente cliente = crearClienteValido();
+        String expResult = MENSAJE_NO_DESACTIVAR;
+        String result = ejecutar(() -> cliente.validarPuedeDesactivarse(List.of("EP04")));
+        assertEquals(expResult, result);
+    }
+
+    /**
+     * Test of validarPuedeDesactivarse method, of class Cliente.
+     */
+    @Test
+    public void testValidarPuedeDesactivarse_caso6_variosPrestamos() {
+        System.out.println("validarPuedeDesactivarse - caso 6");
+        Cliente cliente = crearClienteValido();
+        String expResult = MENSAJE_NO_DESACTIVAR;
+        String result = ejecutar(() -> cliente.validarPuedeDesactivarse(List.of("EP01", "EP02", "EP04")));
+        assertEquals(expResult, result);
+    }
+
+    /**
+     * Test of validarPuedeDesactivarse method, of class Cliente.
+     */
+    @Test
+    public void testValidarPuedeDesactivarse_caso7_estadoQueNoImpide() {
+        System.out.println("validarPuedeDesactivarse - caso 7");
+        Cliente cliente = crearClienteValido();
+        String expResult = OK;
+        String result = ejecutar(() -> cliente.validarPuedeDesactivarse(List.of("EP99")));
         assertEquals(expResult, result);
     }
 

@@ -4,6 +4,8 @@ import java.sql.SQLException;
 import java.util.List;
 import javax.swing.JOptionPane;
 import sistemaprestamo.modelo.Cliente;
+import sistemaprestamo.modelo.Sesion;
+import sistemaprestamo.modelo.Usuario;
 import sistemaprestamo.persistencia.ClienteDAO;
 import sistemaprestamo.vista.FrmClientes;
 
@@ -28,6 +30,7 @@ public class ClienteController {
 
     public void registrar() {
         try {
+            Usuario.validarSesionIniciada(Sesion.getUsuario()); // HU-01 RN-07
             Cliente cliente = vista.obtenerClienteFormulario();
             cliente.validar();
             cliente.validarDocumentoUnico(clienteDAO.buscarPorDocumento(cliente.getNumeroDocumento()));
@@ -46,6 +49,7 @@ public class ClienteController {
 
     public void actualizar() {
         try {
+            Usuario.validarSesionIniciada(Sesion.getUsuario()); // HU-01 RN-07
             Cliente cliente = vista.obtenerClienteFormulario();
             if (cliente.getCodigo().isEmpty()) {
                 throw new IllegalArgumentException("Seleccione un cliente de la lista antes de actualizarlo.");
@@ -68,13 +72,14 @@ public class ClienteController {
 
     public void desactivar() {
         try {
+            Usuario.validarSesionIniciada(Sesion.getUsuario()); // HU-01 RN-07
             String codigo = vista.obtenerCodigoFormulario();
             if (codigo.isEmpty()) {
                 throw new IllegalArgumentException("Seleccione un cliente de la lista antes de desactivarlo.");
             }
             Cliente cliente = clienteDAO.buscarPorCodigo(codigo);
             Cliente.validarRegistrado(cliente);
-            cliente.validarPuedeDesactivarse(clienteDAO.contarPrestamosVigentes(codigo));
+            cliente.validarPuedeDesactivarse(clienteDAO.listarEstadosPrestamos(codigo));
 
             if (!vista.confirmar("¿Desea desactivar al cliente " + vista.obtenerNombreCompletoFormulario() + "?",
                     "Confirmar desactivación")) {

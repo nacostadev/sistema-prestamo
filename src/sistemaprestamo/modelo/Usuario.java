@@ -14,6 +14,7 @@ public class Usuario {
     private String contraseniaHash;
     private String estado;
     private String analistaCodigo;
+    private String analistaNombre;
 
     public Usuario() {
     }
@@ -64,6 +65,15 @@ public class Usuario {
 
     public void setAnalistaCodigo(String analistaCodigo) {
         this.analistaCodigo = analistaCodigo;
+    }
+
+    /** Nombres y apellidos del analista (se muestra en el menú). */
+    public String getAnalistaNombre() {
+        return analistaNombre;
+    }
+
+    public void setAnalistaNombre(String analistaNombre) {
+        this.analistaNombre = analistaNombre;
     }
 
     public boolean estaActivo() {
