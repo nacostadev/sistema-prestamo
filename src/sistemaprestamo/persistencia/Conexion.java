@@ -10,7 +10,7 @@ import java.sql.SQLException;
 public class Conexion {
 
     private static final String URL =
-            "jdbc:sqlserver://DESKTOP-0D6JM9P\\SQL2025;"
+            "jdbc:sqlserver://ROBLES\\SQL2025;"
             + "databaseName=BDGestionCliente;"
             + "integratedSecurity=true;"
             + "encrypt=true;"
