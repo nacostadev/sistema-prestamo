@@ -118,4 +118,13 @@ public class CronogramaTest {
         System.out.println("generar - tea invalida");
         crearPrestamo("10000", 5, "0", "Vigente").generarCronograma();
     }
+
+    @Test
+    public void testTotalesDelCronograma() {
+        System.out.println("totales - intereses y total a pagar");
+        Cronograma cronograma = crearCronogramaEjemplo();
+        BigDecimal intereses = cronograma.calcularTotalIntereses();
+        BigDecimal pagado = cronograma.calcularTotalPagado();
+        assertEquals(new BigDecimal("10000.00"), pagado.subtract(intereses));
+    }
 }

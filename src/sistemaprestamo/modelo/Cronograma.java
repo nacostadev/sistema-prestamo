@@ -47,6 +47,22 @@ public class Cronograma {
         return total;
     }
 
+    public BigDecimal calcularTotalIntereses() {
+        BigDecimal total = BigDecimal.ZERO;
+        for (DetalleCronograma cuota : detalle) {
+            total = total.add(cuota.getInteres());
+        }
+        return total;
+    }
+
+    public BigDecimal calcularTotalPagado() {
+        BigDecimal total = BigDecimal.ZERO;
+        for (DetalleCronograma cuota : detalle) {
+            total = total.add(cuota.getCuota());
+        }
+        return total;
+    }
+
     public boolean esConsistente() {
         if (detalle.isEmpty()) {
             return false;

@@ -233,29 +233,82 @@ public class Prestamo {
         tea = tea.setScale(4, RoundingMode.HALF_UP);
     }
 
+    /**
+     * HU-02 RN-01 y RN-06: el cliente debe estar registrado y activo, y no puede tener
+     * préstamos en estado de morosidad o incumplimiento.
+     *
+     * @param prestamosDelCliente todos los préstamos que ya tiene el cliente
+     */
+    public void validarCliente(Cliente cliente, List<Prestamo> prestamosDelCliente) {
+        if (cliente == null) {
+            throw new IllegalArgumentException("El cliente no existe en el sistema.");
+        }
+        if (!cliente.estaActivo()) {
+            throw new IllegalArgumentException(nombreDe(cliente) + " se encuentra inactivo en el sistema.");
+        }
+        for (Prestamo existente : prestamosDelCliente) {
+            if (existente.estaEnMora()) {
+                throw new IllegalArgumentException(nombreDe(cliente) + " tiene préstamos en estado de morosidad "
+                        + "o incumplimiento.");
+            }
+        }
+    }
+
+    /** Monto, plazo y TEA contra las condiciones del tipo de préstamo (HU-02 RN-04 y RN-05). */
     public void validarCondiciones(TipoPrestamo tipo) {
-        if (tipo == null) {
-            throw new IllegalArgumentException("El tipo de préstamo seleccionado no está registrado.");
-        }
-        if (plazoCuotas < tipo.getPlazoMinimo() || plazoCuotas > tipo.getPlazoMaximo()) {
-            throw new IllegalArgumentException("El plazo no cumple con las condiciones del tipo de préstamo ("
-                    + tipo.getPlazoMinimo() + " a " + tipo.getPlazoMaximo() + " cuotas).");
-        }
-        if (tea.compareTo(tipo.getTasaMinima()) < 0 || tea.compareTo(tipo.getTasaMaxima()) > 0) {
-            throw new IllegalArgumentException("La TEA no cumple con las condiciones del tipo de préstamo ("
-                    + comoPorcentaje(tipo.getTasaMinima()) + " a " + comoPorcentaje(tipo.getTasaMaxima()) + ").");
-        }
+        validarPlazoYTasa(tipo);
+        validarMonto(tipo);
+    }
+
+    /** HU-02 RN-04 / CA-04: lanza MontoInvalidoException si el monto está fuera de los límites. */
+    public void validarMonto(TipoPrestamo tipo) {
+        exigirTipo(tipo);
         if (tipo.getMontoMinimo() == null || tipo.getMontoMaximo() == null) {
             throw new IllegalArgumentException(
                     "No existe una política crediticia definida para el tipo de préstamo.");
         }
-        if (montoSolicitado.compareTo(tipo.getMontoMinimo()) < 0
-                || montoSolicitado.compareTo(tipo.getMontoMaximo()) > 0) {
-            throw new IllegalArgumentException("El monto no es válido: debe estar entre "
+        if (!montoCumple(tipo)) {
+            throw new MontoInvalidoException("El monto no es válido: debe estar entre "
                     + tipo.getMontoMinimo() + " y " + tipo.getMontoMaximo() + ".");
         }
     }
 
+    /** HU-02 RN-05 / CA-06: el plazo y la TEA deben cumplir las condiciones del tipo de préstamo. */
+    public void validarPlazoYTasa(TipoPrestamo tipo) {
+        exigirTipo(tipo);
+        if (!plazoCumple(tipo)) {
+            throw new IllegalArgumentException("El plazo no cumple con las condiciones del tipo de préstamo ("
+                    + tipo.getPlazoMinimo() + " a " + tipo.getPlazoMaximo() + " cuotas).");
+        }
+        if (!teaCumple(tipo)) {
+            throw new IllegalArgumentException("La TEA no cumple con las condiciones del tipo de préstamo ("
+                    + comoPorcentaje(tipo.getTasaMinima()) + " a " + comoPorcentaje(tipo.getTasaMaxima()) + ").");
+        }
+    }
+
+    public boolean montoCumple(TipoPrestamo tipo) {
+        return tipo.getMontoMinimo() != null && tipo.getMontoMaximo() != null
+                && montoSolicitado.compareTo(tipo.getMontoMinimo()) >= 0
+                && montoSolicitado.compareTo(tipo.getMontoMaximo()) <= 0;
+    }
+
+    public boolean plazoCumple(TipoPrestamo tipo) {
+        return plazoCuotas >= tipo.getPlazoMinimo() && plazoCuotas <= tipo.getPlazoMaximo();
+    }
+
+    public boolean teaCumple(TipoPrestamo tipo) {
+        return tea.compareTo(tipo.getTasaMinima()) >= 0 && tea.compareTo(tipo.getTasaMaxima()) <= 0;
+    }
+
+    private String nombreDe(Cliente cliente) {
+        return cliente.getApellidos() + ", " + cliente.getNombres();
+    }
+
+    private void exigirTipo(TipoPrestamo tipo) {
+        if (tipo == null) {
+            throw new IllegalArgumentException("El tipo de préstamo seleccionado no está registrado.");
+        }
+    }
 
     public void validarPuedeGenerarCronograma() {
         if (!estaVigente()) {

@@ -37,14 +37,14 @@ public class PrestamoDAO {
             + "INNER JOIN Prestamo.Monedas AS m ON m.MonedasCodigo = p.MonedasCodigo "
             + "INNER JOIN Prestamo.EstadosPrestamo AS e ON e.EstadosPrestamoCodigo = p.EstadosPrestamoCodigo ";
 
-    private static final String SQL_TIPO_PRESTAMO =
+    /** Tipos de préstamo con su plazo, TEA (RN-05) y los límites de monto de su política crediticia (RN-04). */
+    private static final String SQL_TIPOS_PRESTAMO =
             "SELECT t.TiposPrestamoCodigo, t.TiposPrestamoNombre, "
             + "t.TiposPrestamoPlazoMinimo, t.TiposPrestamoPlazoMaximo, "
             + "t.TiposPrestamoTasaMinima, t.TiposPrestamoTasaMaxima, "
             + "p.PoliticaCreditoMontoMinimo, p.PoliticaCreditoMontoMaximo "
             + "FROM Prestamo.TiposPrestamo AS t "
-            + "LEFT JOIN Prestamo.PoliticaCredito AS p ON p.TiposPrestamoCodigo = t.TiposPrestamoCodigo "
-            + "WHERE t.TiposPrestamoCodigo = ?";
+            + "LEFT JOIN Prestamo.PoliticaCredito AS p ON p.TiposPrestamoCodigo = t.TiposPrestamoCodigo ";
 
     public String registrar(Prestamo prestamo) throws SQLException {
         try (Connection conexion = Conexion.getConnection()) {
@@ -86,23 +86,38 @@ public class PrestamoDAO {
 
     public TipoPrestamo buscarTipoPrestamo(String codigoTipo) throws SQLException {
         try (Connection conexion = Conexion.getConnection();
-             PreparedStatement sentencia = conexion.prepareStatement(SQL_TIPO_PRESTAMO)) {
+             PreparedStatement sentencia = conexion.prepareStatement(
+                     SQL_TIPOS_PRESTAMO + "WHERE t.TiposPrestamoCodigo = ?")) {
             sentencia.setString(1, codigoTipo);
             try (ResultSet resultado = sentencia.executeQuery()) {
-                if (!resultado.next()) {
-                    return null;
-                }
-                return new TipoPrestamo(
-                        resultado.getString("TiposPrestamoCodigo").trim(),
-                        resultado.getString("TiposPrestamoNombre"),
-                        resultado.getInt("TiposPrestamoPlazoMinimo"),
-                        resultado.getInt("TiposPrestamoPlazoMaximo"),
-                        resultado.getBigDecimal("TiposPrestamoTasaMinima"),
-                        resultado.getBigDecimal("TiposPrestamoTasaMaxima"),
-                        resultado.getBigDecimal("PoliticaCreditoMontoMinimo"),
-                        resultado.getBigDecimal("PoliticaCreditoMontoMaximo"));
+                return resultado.next() ? mapearTipo(resultado) : null;
             }
         }
+    }
+
+    public List<TipoPrestamo> listarTiposPrestamo() throws SQLException {
+        List<TipoPrestamo> tipos = new ArrayList<>();
+        try (Connection conexion = Conexion.getConnection();
+             PreparedStatement sentencia = conexion.prepareStatement(
+                     SQL_TIPOS_PRESTAMO + "ORDER BY t.TiposPrestamoCodigo");
+             ResultSet resultado = sentencia.executeQuery()) {
+            while (resultado.next()) {
+                tipos.add(mapearTipo(resultado));
+            }
+        }
+        return tipos;
+    }
+
+    private TipoPrestamo mapearTipo(ResultSet resultado) throws SQLException {
+        return new TipoPrestamo(
+                resultado.getString("TiposPrestamoCodigo").trim(),
+                resultado.getString("TiposPrestamoNombre"),
+                resultado.getInt("TiposPrestamoPlazoMinimo"),
+                resultado.getInt("TiposPrestamoPlazoMaximo"),
+                resultado.getBigDecimal("TiposPrestamoTasaMinima"),
+                resultado.getBigDecimal("TiposPrestamoTasaMaxima"),
+                resultado.getBigDecimal("PoliticaCreditoMontoMinimo"),
+                resultado.getBigDecimal("PoliticaCreditoMontoMaximo"));
     }
 
     private List<Prestamo> consultar(String filtro, String valor) throws SQLException {
