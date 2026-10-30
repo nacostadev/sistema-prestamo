@@ -1,6 +1,7 @@
 package sistemaprestamo.persistencia;
 
 import java.sql.Connection;
+import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -46,27 +47,127 @@ public class PrestamoDAO {
             + "FROM Prestamo.TiposPrestamo AS t "
             + "LEFT JOIN Prestamo.PoliticaCredito AS p ON p.TiposPrestamoCodigo = t.TiposPrestamoCodigo ";
 
+
     public String registrar(Prestamo prestamo) throws SQLException {
+
         try (Connection conexion = Conexion.getConnection()) {
-            String codigo = Conexion.siguienteCodigo(conexion, SQL_MAXIMO_CODIGO, "PR", 4);
-            try (PreparedStatement sentencia = conexion.prepareStatement(SQL_INSERTAR)) {
-                sentencia.setString(1, codigo);
-                sentencia.setString(2, prestamo.getClienteCodigo());
-                sentencia.setString(3, prestamo.getTipoPrestamoCodigo());
-                sentencia.setBigDecimal(4, prestamo.getMontoSolicitado());
-                sentencia.setInt(5, prestamo.getPlazoCuotas());
-                sentencia.setBigDecimal(6, prestamo.getTea());
-                sentencia.setString(7, prestamo.getModalidadPagoCodigo());
-                sentencia.setDate(8, java.sql.Date.valueOf(prestamo.getFechaDesembolso()));
-                sentencia.setString(9, prestamo.getMonedaCodigo());
-                asignarOpcional(sentencia, 10, prestamo.getGarantiaCodigo());
-                asignarOpcional(sentencia, 11, prestamo.getObservaciones());
-                asignarOpcional(sentencia, 12, prestamo.getDescripcionDestino());
-                sentencia.setString(13, Prestamo.ESTADO_VIGENTE);
-                sentencia.executeUpdate();
+
+            conexion.setAutoCommit(false);
+
+            try {
+                try (PreparedStatement inicio = conexion.prepareStatement(
+                        "SELECT TOP (1) PrestamosCodigo "
+                        + "FROM Prestamo.Prestamos")) {
+
+                    inicio.execute();
+                }
+
+                try (CallableStatement bloqueo = conexion.prepareCall(
+                        "{? = call sys.sp_getapplock(?, ?, ?, ?)}")) {
+
+                    bloqueo.registerOutParameter(
+                            1, java.sql.Types.INTEGER);
+
+                    bloqueo.setString(
+                            2, "Prestamo.PrestamosCodigo");
+
+                    bloqueo.setString(3, "Exclusive");
+                    bloqueo.setString(4, "Transaction");
+                    bloqueo.setInt(5, 10000);
+
+                    bloqueo.execute();
+
+                    int resultado = bloqueo.getInt(1);
+
+                    System.out.println(
+                            "Resultado del bloqueo: " + resultado);
+
+                    if (resultado < 0) {
+                        throw new SQLException(
+                                "No se pudo obtener el bloqueo. "
+                                + "Código: " + resultado);
+                    }
+                }
+
+                String codigo = Conexion.siguienteCodigo(
+                        conexion,
+                        SQL_MAXIMO_CODIGO,
+                        "PR",
+                        4
+                );
+
+                try (PreparedStatement sentencia =
+                        conexion.prepareStatement(SQL_INSERTAR)) {
+
+                    sentencia.setString(1, codigo);
+
+                    sentencia.setString(
+                            2, prestamo.getClienteCodigo());
+
+                    sentencia.setString(
+                            3, prestamo.getTipoPrestamoCodigo());
+
+                    sentencia.setBigDecimal(
+                            4, prestamo.getMontoSolicitado());
+
+                    sentencia.setInt(
+                            5, prestamo.getPlazoCuotas());
+
+                    sentencia.setBigDecimal(
+                            6, prestamo.getTea());
+
+                    sentencia.setString(
+                            7, prestamo.getModalidadPagoCodigo());
+
+                    sentencia.setDate(
+                            8, java.sql.Date.valueOf(
+                                    prestamo.getFechaDesembolso()));
+
+                    sentencia.setString(
+                            9, prestamo.getMonedaCodigo());
+
+                    asignarOpcional(
+                            sentencia, 10,
+                            prestamo.getGarantiaCodigo());
+
+                    asignarOpcional(
+                            sentencia, 11,
+                            prestamo.getObservaciones());
+
+                    asignarOpcional(
+                            sentencia, 12,
+                            prestamo.getDescripcionDestino());
+
+                    sentencia.setString(
+                            13, Prestamo.ESTADO_VIGENTE);
+
+                    int filas = sentencia.executeUpdate();
+
+                    if (filas != 1) {
+                        throw new SQLException(
+                                "No se pudo insertar el préstamo.");
+                    }
+                }
+
+                conexion.commit();
+
+                prestamo.setCodigo(codigo);
+
+                System.out.println(
+                        "Préstamo registrado: " + codigo);
+
+                return codigo;
+
+            } catch (SQLException | RuntimeException excepcion) {
+
+                try {
+                    conexion.rollback();
+                } catch (SQLException errorRollback) {
+                    excepcion.addSuppressed(errorRollback);
+                }
+
+                throw excepcion;
             }
-            prestamo.setCodigo(codigo);
-            return codigo;
         }
     }
 

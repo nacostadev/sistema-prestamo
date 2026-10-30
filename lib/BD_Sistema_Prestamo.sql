@@ -351,6 +351,61 @@ CREATE TABLE Prestamo.Prestamos
 ON Registros;
 GO
 
+-- Refuerzo de RN01, RN04, RN05 y RN06 para inserciones directas.
+-- Los valores de política se mantienen en las filas actuales de PoliticaCredito
+-- y TiposPrestamo; no se redefinen en este trigger.
+CREATE OR ALTER TRIGGER Prestamo.trg_Prestamos_ValidarHU02
+ON Prestamo.Prestamos
+AFTER INSERT, UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF EXISTS (
+        SELECT 1
+        FROM inserted AS i
+        LEFT JOIN Cliente.Clientes AS c ON c.ClientesCodigo = i.ClientesCodigo
+        WHERE c.ClientesCodigo IS NULL OR c.ClientesEstado <> 'A'
+    )
+        THROW 51001, 'HU-02 RN01: el cliente debe estar registrado y activo.', 1;
+
+    IF EXISTS (
+        SELECT 1
+        FROM inserted AS i
+        LEFT JOIN Prestamo.TiposPrestamo AS t ON t.TiposPrestamoCodigo = i.TiposPrestamoCodigo
+        LEFT JOIN Prestamo.PoliticaCredito AS pc ON pc.TiposPrestamoCodigo = i.TiposPrestamoCodigo
+        WHERE t.TiposPrestamoCodigo IS NULL
+           OR pc.TiposPrestamoCodigo IS NULL
+           OR i.PrestamosMontoSolicitado < pc.PoliticaCreditoMontoMinimo
+           OR i.PrestamosMontoSolicitado > pc.PoliticaCreditoMontoMaximo
+    )
+        THROW 51002, 'HU-02 RN04: el monto está fuera de los límites crediticios.', 1;
+
+    IF EXISTS (
+        SELECT 1
+        FROM inserted AS i
+        INNER JOIN Prestamo.TiposPrestamo AS t ON t.TiposPrestamoCodigo = i.TiposPrestamoCodigo
+        WHERE i.PrestamosPlazoCuotas < t.TiposPrestamoPlazoMinimo
+           OR i.PrestamosPlazoCuotas > t.TiposPrestamoPlazoMaximo
+           OR i.PrestamosTEA < t.TiposPrestamoTasaMinima
+           OR i.PrestamosTEA > t.TiposPrestamoTasaMaxima
+    )
+        THROW 51003, 'HU-02 RN05: el plazo o la TEA no cumplen las condiciones del tipo.', 1;
+
+    IF EXISTS (
+        SELECT 1
+        FROM inserted AS i
+        INNER JOIN Prestamo.Prestamos AS p
+            ON p.ClientesCodigo = i.ClientesCodigo
+           AND p.PrestamosCodigo <> i.PrestamosCodigo
+        INNER JOIN Prestamo.EstadosPrestamo AS e
+            ON e.EstadosPrestamoCodigo = p.EstadosPrestamoCodigo
+        WHERE e.EstadosPrestamoNombre IN (N'Moroso', N'Incumplimiento')
+    )
+        THROW 51004, 'HU-02 RN06: el cliente tiene un préstamo moroso o en incumplimiento.', 1;
+END;
+GO
+
 
 -- ==========================================================
 -- HU-03: GENERAR CRONOGRAMA DE PAGOS
