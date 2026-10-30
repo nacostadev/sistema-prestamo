@@ -16,12 +16,14 @@ import java.util.Set;
 import java.util.function.Supplier;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import sistemaprestamo.modelo.Sesion;
+import sistemaprestamo.modelo.Usuario;
 
 public class MenuController {
 
-    public static final String INICIO   = "INICIO";
+    //public static final String INICIO   = "INICIO";
     public static final String PRESTAMO = "PRESTAMO";
-    public static final String CONSULTA = "CONSULTA";
+    //public static final String CONSULTA = "CONSULTA";
     public static final String CLIENTES = "CLIENTES";
     public static final String REPORTES = "REPORTES";
     public static final String CONFIG   = "CONFIG";
@@ -37,6 +39,14 @@ public class MenuController {
     }
 
     public void seleccionar(String clave) {
+        if (PRESTAMO.equals(clave)) {
+            try {
+                Usuario.validarSesionAutorizada(Sesion.getUsuario());
+            } catch (IllegalArgumentException excepcion) {
+                vista.mostrarMensaje(excepcion.getMessage());
+                return;
+            }
+        }
         Supplier<JFrame> fabrica = formularios.get(clave);
         if (fabrica == null) {
             vista.mostrarMensaje("Módulo en construcción");

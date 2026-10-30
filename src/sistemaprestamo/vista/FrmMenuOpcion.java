@@ -30,6 +30,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.basic.BasicButtonUI;
+import sistemaprestamo.modelo.Sesion;
+import sistemaprestamo.modelo.Usuario;
  
 public class FrmMenuOpcion extends javax.swing.JFrame {
  
@@ -62,7 +64,7 @@ public class FrmMenuOpcion extends javax.swing.JFrame {
         initComponents();
         construirDiseno();
         controller = new MenuController(this);
-        controller.seleccionar(MenuController.PRESTAMO);
+        controller.seleccionar(MenuController.CLIENTES);
     }
  
     private void construirDiseno() {
@@ -171,7 +173,10 @@ public class FrmMenuOpcion extends javax.swing.JFrame {
         superior.setLayout(new BoxLayout(superior, BoxLayout.Y_AXIS));
         superior.add(crearLogo());
         superior.add(crearLinea());
-        superior.add(crearPerfil("Lain Cardenas", "Analista de Crédito", "RN-07"));
+        Usuario usuario = Sesion.getUsuario();
+        String nombreAnalista = usuario == null ? "" : usuario.getAnalistaNombre();
+        String codigoAnalista = usuario == null ? "" : usuario.getAnalistaCodigo();
+        superior.add(crearPerfil(nombreAnalista, "Analista de Crédito", codigoAnalista));
         superior.add(crearLinea());
         barra.add(superior, BorderLayout.NORTH);
  
@@ -179,10 +184,10 @@ public class FrmMenuOpcion extends javax.swing.JFrame {
         panelItems.setOpaque(false);
         panelItems.setLayout(new BoxLayout(panelItems, BoxLayout.Y_AXIS));
         panelItems.setBorder(new EmptyBorder(12, 0, 0, 0));
-        agregarOpcion(panelItems, MenuController.INICIO,   "\u2302",       "Inicio");
-        agregarOpcion(panelItems, MenuController.PRESTAMO, "\uD83D\uDCC4", "Registrar Préstamo");
-        agregarOpcion(panelItems, MenuController.CONSULTA, "\uD83D\uDD0D", "Consultar Préstamos");
+        //agregarOpcion(panelItems, MenuController.INICIO,   "\u2302",       "Inicio");
         agregarOpcion(panelItems, MenuController.CLIENTES, "\uD83D\uDC65", "Clientes");
+        agregarOpcion(panelItems, MenuController.PRESTAMO, "\uD83D\uDCC4", "Registrar Préstamo");
+        //agregarOpcion(panelItems, MenuController.CONSULTA, "\uD83D\uDD0D", "Consultar Préstamos");
         agregarOpcion(panelItems, MenuController.REPORTES, "\uD83D\uDCCA", "Reportes");
         agregarOpcion(panelItems, MenuController.CONFIG,   "\u2699",       "Configuración");
         barra.add(panelItems, BorderLayout.CENTER);

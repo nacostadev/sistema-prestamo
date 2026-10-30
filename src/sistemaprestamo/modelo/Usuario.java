@@ -105,4 +105,15 @@ public class Usuario {
             throw new IllegalArgumentException("Debe iniciar sesión como Analista de Crédito para realizar esta acción.");
         }
     }
+
+    /** RN-07: sesión vigente de un usuario activo asociado a un analista. */
+    public static void validarSesionAutorizada(Usuario usuarioEnSesion) {
+        validarSesionIniciada(usuarioEnSesion);
+        if (!usuarioEnSesion.estaActivo()
+                || usuarioEnSesion.getAnalistaCodigo() == null
+                || usuarioEnSesion.getAnalistaCodigo().trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "La sesión no corresponde a un Analista de Crédito activo y autorizado.");
+        }
+    }
 }

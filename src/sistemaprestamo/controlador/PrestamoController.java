@@ -19,6 +19,7 @@ import sistemaprestamo.modelo.Usuario;
 import sistemaprestamo.persistencia.CatalogoDAO;
 import sistemaprestamo.persistencia.ClienteDAO;
 import sistemaprestamo.persistencia.PrestamoDAO;
+import sistemaprestamo.persistencia.UsuarioDAO;
 
 /**
  * Coordina el registro de préstamos financieros (HU-02). Las reglas de negocio están en la
@@ -41,6 +42,7 @@ public class PrestamoController {
     private final PrestamoDAO prestamoDAO;
     private final ClienteDAO clienteDAO;
     private final CatalogoDAO catalogoDAO;
+    private final UsuarioDAO usuarioDAO;
 
     public PrestamoController() {
         this(new PrestamoDAO(), new ClienteDAO(), new CatalogoDAO());
@@ -50,6 +52,7 @@ public class PrestamoController {
         this.prestamoDAO = prestamoDAO;
         this.clienteDAO = clienteDAO;
         this.catalogoDAO = catalogoDAO;
+        this.usuarioDAO = new UsuarioDAO();
     }
 
     // ---- Datos del formulario (CA-01) ----
@@ -100,7 +103,12 @@ public class PrestamoController {
      * @throws SQLException si ocurre un error al guardar
      */
     public String registrar(Prestamo prestamo) throws SQLException {
-        Usuario.validarSesionIniciada(Sesion.getUsuario());                       // RN-07
+        Usuario usuario = Sesion.getUsuario();
+        Usuario.validarSesionAutorizada(usuario);                                // RN-07
+        if (!usuarioDAO.estaAutorizado(usuario)) {
+            throw new IllegalArgumentException(
+                    "El usuario ya no está activo o no está autorizado como Analista de Crédito.");
+        }
         prestamo.validar();                                                       // RN-02 (CA-05)
 
         Cliente cliente = clienteDAO.buscarPorCodigo(prestamo.getClienteCodigo());

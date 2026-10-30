@@ -23,6 +23,11 @@ public class UsuarioDAO {
             + "INNER JOIN Personal.Analistas AS a ON a.AnalistasCodigo = u.AnalistasCodigo "
             + "WHERE u.UsuariosNombre = ?";
 
+    private static final String SQL_ANALISTA_AUTORIZADO =
+            "SELECT 1 FROM Seguridad.Usuarios AS u "
+            + "INNER JOIN Personal.Analistas AS a ON a.AnalistasCodigo = u.AnalistasCodigo "
+            + "WHERE u.UsuariosCodigo = ? AND u.UsuariosEstado = 'A'";
+
     /** Devuelve el usuario con ese nombre, o null si no existe. */
     public Usuario buscarPorNombre(String nombre) throws SQLException {
         try (Connection conexion = Conexion.getConnection();
@@ -42,6 +47,20 @@ public class UsuarioDAO {
                 usuario.setAnalistaNombre(resultado.getString("AnalistasNombres").trim()
                         + " " + resultado.getString("AnalistasApellidos").trim());
                 return usuario;
+            }
+        }
+    }
+
+    /** Comprueba que el usuario de la sesión siga activo y asociado a un analista. */
+    public boolean estaAutorizado(Usuario usuario) throws SQLException {
+        if (usuario == null || usuario.getCodigo() == null) {
+            return false;
+        }
+        try (Connection conexion = Conexion.getConnection();
+             PreparedStatement sentencia = conexion.prepareStatement(SQL_ANALISTA_AUTORIZADO)) {
+            sentencia.setString(1, usuario.getCodigo());
+            try (ResultSet resultado = sentencia.executeQuery()) {
+                return resultado.next();
             }
         }
     }

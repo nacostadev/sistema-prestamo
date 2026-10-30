@@ -17,6 +17,8 @@ import sistemaprestamo.modelo.Cronograma;
 import sistemaprestamo.modelo.DetalleCronograma;
 import sistemaprestamo.modelo.ItemCatalogo;
 import sistemaprestamo.modelo.Prestamo;
+import sistemaprestamo.modelo.Sesion;
+import sistemaprestamo.modelo.Usuario;
 
 /**
  * Formulario de préstamos financieros: registrar préstamo (HU-02) y generar su cronograma
@@ -35,6 +37,7 @@ public class FrmRegistroPrestamo extends javax.swing.JFrame {
     private List<Prestamo> prestamosMostrados = new ArrayList<>();
 
     public FrmRegistroPrestamo() {
+        Usuario.validarSesionAutorizada(Sesion.getUsuario());
         initComponents();
         modeloPrestamos = (DefaultTableModel) tblPrestamos.getModel();
         modeloCronograma = (DefaultTableModel) tblCronograma.getModel();
