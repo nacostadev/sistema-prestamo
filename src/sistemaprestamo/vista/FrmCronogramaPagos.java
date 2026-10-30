@@ -48,6 +48,26 @@ public class FrmCronogramaPagos extends javax.swing.JFrame {
         lblResumen.setText("Cronograma "+c.getCodigo()+" | Total amortizado: "+dinero(p.getMonedaSimbolo(),c.calcularTotalAmortizado())+" | Intereses: "+dinero(p.getMonedaSimbolo(),c.calcularTotalIntereses()));
         lblTem.setText("TEM: "+p.calcularTem().movePointRight(2).setScale(6,java.math.RoundingMode.HALF_UP)+" % | Cuota fija: "+dinero(p.getMonedaSimbolo(),p.calcularCuotaFija()));
     }
+    public static void main(String[] args) {
+        /* Configuración del Look and Feel (L&F) Nimbus para la interfaz */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(FrmCronogramaPagos.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+
+        /* Crear y mostrar el formulario en el hilo de eventos de Swing */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new FrmCronogramaPagos().setVisible(true);
+            }
+        });
+    }
     public void limpiarCronograma() { ((DefaultTableModel)tblCronograma.getModel()).setRowCount(0); lblResumen.setText("El cronograma guardado se mostrará aquí."); lblTem.setText("TEM y cuota fija se calcularán al generar."); }
     public void mostrarMensaje(String mensaje,String titulo,int tipo) { JOptionPane.showMessageDialog(this,mensaje,titulo,tipo); }
     public boolean confirmar(String mensaje,String titulo) { return JOptionPane.showConfirmDialog(this,mensaje,titulo,JOptionPane.YES_NO_OPTION)==JOptionPane.YES_OPTION; }
