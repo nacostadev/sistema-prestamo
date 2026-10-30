@@ -26,6 +26,11 @@ public class CronogramaDAO {
 
 
     public String guardar(Cronograma cronograma) throws SQLException {
+        if (!cronograma.esConsistente()) {
+            throw new IllegalArgumentException(
+                    "El cronograma no es consistente: el total de amortizaciones no coincide con el monto "
+                    + "del préstamo. No se guardó el cronograma.");
+        }
         try (Connection conexion = Conexion.getConnection()) {
             conexion.setAutoCommit(false);
             try {
