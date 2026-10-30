@@ -368,7 +368,7 @@ public class Prestamo {
         }
 
         if (!cronograma.esConsistente()) {
-            throw new IllegalArgumentException("El total de amortizaciones no coincide con el monto del "
+            throw new CronogramaInconsistenteException("El total de amortizaciones no coincide con el monto del "
                     + "préstamo. No se guardó el cronograma.");
         }
         return cronograma;

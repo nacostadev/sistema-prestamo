@@ -1,6 +1,7 @@
 package sistemaprestamo.controlador;
 
 import sistemaprestamo.vista.FrmClientes;
+import sistemaprestamo.vista.FrmCronogramaPagos;
 import sistemaprestamo.vista.FrmMenuOpcion;
 //import sistemaprestamo.vista.FrmPrestamo;
 import sistemaprestamo.vista.FrmRegistroPrestamo;
@@ -24,6 +25,7 @@ public class MenuController {
     //public static final String INICIO   = "INICIO";
     public static final String PRESTAMO = "PRESTAMO";
     //public static final String CONSULTA = "CONSULTA";
+    public static final String CRONOGRAMA = "CRONOGRAMA";
     public static final String CLIENTES = "CLIENTES";
     public static final String REPORTES = "REPORTES";
     public static final String CONFIG   = "CONFIG";
@@ -35,11 +37,12 @@ public class MenuController {
     public MenuController(FrmMenuOpcion vista) {
         this.vista = vista;
         formularios.put(PRESTAMO, FrmRegistroPrestamo::new);
+        formularios.put(CRONOGRAMA, FrmCronogramaPagos::new);
         formularios.put(CLIENTES, FrmClientes::new);
     }
 
     public void seleccionar(String clave) {
-        if (PRESTAMO.equals(clave)) {
+        if (PRESTAMO.equals(clave) || CRONOGRAMA.equals(clave)) {
             try {
                 Usuario.validarSesionAutorizada(Sesion.getUsuario());
             } catch (IllegalArgumentException excepcion) {

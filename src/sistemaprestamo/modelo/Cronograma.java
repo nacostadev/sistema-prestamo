@@ -33,6 +33,13 @@ public class Cronograma {
         return Collections.unmodifiableList(detalle);
     }
 
+    public static Cronograma reconstruir(String codigo, Prestamo prestamo, List<DetalleCronograma> cuotas) {
+        Cronograma cronograma = new Cronograma(prestamo);
+        cronograma.codigo = codigo;
+        cronograma.detalle.addAll(cuotas);
+        return cronograma;
+    }
+
     void agregarCuota(DetalleCronograma cuota) {
         detalle.add(cuota);
     }

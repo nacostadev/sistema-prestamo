@@ -2,9 +2,14 @@ package sistemaprestamo.persistencia;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import sistemaprestamo.modelo.Cronograma;
+import sistemaprestamo.modelo.CronogramaInconsistenteException;
 import sistemaprestamo.modelo.DetalleCronograma;
+import sistemaprestamo.modelo.Prestamo;
 
 
 public class CronogramaDAO {
@@ -24,10 +29,18 @@ public class CronogramaDAO {
             + "DetalleSaldoAnterior, DetalleInteres, DetalleAmortizacion, DetalleCuota, DetalleSaldoPendiente) "
             + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
+    private static final String SQL_CONSULTAR =
+            "SELECT c.CronogramasCodigo, d.DetalleNumeroCuota, d.DetalleFechaVencimiento, "
+            + "d.DetalleSaldoAnterior, d.DetalleInteres, d.DetalleAmortizacion, d.DetalleCuota, "
+            + "d.DetalleSaldoPendiente "
+            + "FROM Cronograma.Cronogramas AS c "
+            + "INNER JOIN Cronograma.DetalleCronograma AS d ON d.CronogramasCodigo = c.CronogramasCodigo "
+            + "WHERE c.PrestamosCodigo = ? ORDER BY d.DetalleNumeroCuota";
+
 
     public String guardar(Cronograma cronograma) throws SQLException {
         if (!cronograma.esConsistente()) {
-            throw new IllegalArgumentException(
+            throw new CronogramaInconsistenteException(
                     "El cronograma no es consistente: el total de amortizaciones no coincide con el monto "
                     + "del préstamo. No se guardó el cronograma.");
         }
@@ -51,6 +64,29 @@ public class CronogramaDAO {
             }
             throw excepcion;
         }
+    }
+
+    public Cronograma buscarPorPrestamo(Prestamo prestamo) throws SQLException {
+        String codigoCronograma = null;
+        List<DetalleCronograma> cuotas = new ArrayList<>();
+        try (Connection conexion = Conexion.getConnection();
+             PreparedStatement sentencia = conexion.prepareStatement(SQL_CONSULTAR)) {
+            sentencia.setString(1, prestamo.getCodigo());
+            try (ResultSet resultado = sentencia.executeQuery()) {
+                while (resultado.next()) {
+                    codigoCronograma = resultado.getString("CronogramasCodigo").trim();
+                    cuotas.add(new DetalleCronograma(
+                            resultado.getInt("DetalleNumeroCuota"),
+                            resultado.getDate("DetalleFechaVencimiento").toLocalDate(),
+                            resultado.getBigDecimal("DetalleSaldoAnterior"),
+                            resultado.getBigDecimal("DetalleInteres"),
+                            resultado.getBigDecimal("DetalleAmortizacion"),
+                            resultado.getBigDecimal("DetalleCuota"),
+                            resultado.getBigDecimal("DetalleSaldoPendiente")));
+                }
+            }
+        }
+        return codigoCronograma == null ? null : Cronograma.reconstruir(codigoCronograma, prestamo, cuotas);
     }
 
     private void insertarCabecera(Connection conexion, String codigoCronograma, String codigoPrestamo)
