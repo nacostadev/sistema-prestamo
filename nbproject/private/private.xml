@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-private xmlns="http://www.netbeans.org/ns/project-private/1">
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+        <group>
+            <file>file:/C:/Proyecto%20Calidad%202/sistema-prestamo/src/sistemaprestamo/persistencia/ClienteDAO.java</file>
+            <file>file:/C:/Proyecto%20Calidad%202/sistema-prestamo/src/sistemaprestamo/persistencia/Conexion.java</file>
+            <file>file:/C:/Proyecto%20Calidad%202/sistema-prestamo/src/sistemaprestamo/persistencia/TestConexion.java</file>
+            <file>file:/C:/Proyecto%20Calidad%202/sistema-prestamo/src/sistemaprestamo/Principal.java</file>
+            <file>file:/C:/Proyecto%20Calidad%202/sistema-prestamo/src/sistemaprestamo/vista/FrmRegistroPrestamo.java</file>
+            <file>file:/C:/Proyecto%20Calidad%202/sistema-prestamo/src/sistemaprestamo/vista/FrmMenuOpcion.java</file>
+            <file>file:/C:/Proyecto%20Calidad%202/sistema-prestamo/src/sistemaprestamo/vista/FrmPrestamo.java</file>
+            <file>file:/C:/Proyecto%20Calidad%202/sistema-prestamo/src/sistemaprestamo/modelo/Cronograma.java</file>
+            <file>file:/C:/Proyecto%20Calidad%202/sistema-prestamo/src/sistemaprestamo/modelo/Cliente.java</file>
+            <file>file:/C:/Proyecto%20Calidad%202/sistema-prestamo/src/sistemaprestamo/vista/FrmClientes.java</file>
+            <file>file:/C:/Proyecto%20Calidad%202/sistema-prestamo/src/sistemaprestamo/vista/FrmLogin.java</file>
+            <file>file:/C:/Proyecto%20Calidad%202/sistema-prestamo/src/sistemaprestamo/persistencia/PrestamoDAO.java</file>
+            <file>file:/C:/Proyecto%20Calidad%202/sistema-prestamo/src/sistemaprestamo/controlador/ClienteController.java</file>
+            <file>file:/C:/Proyecto%20Calidad%202/sistema-prestamo/src/sistemaprestamo/controlador/LoginController.java</file>
+            <file>file:/C:/Proyecto%20Calidad%202/sistema-prestamo/src/sistemaprestamo/persistencia/UsuarioDAO.java</file>
+            <file>file:/C:/Proyecto%20Calidad%202/sistema-prestamo/src/sistemaprestamo/modelo/Usuario.java</file>
+            <file>file:/C:/Proyecto%20Calidad%202/sistema-prestamo/src/sistemaprestamo/persistencia/CronogramaDAO.java</file>
+            <file>file:/C:/Proyecto%20Calidad%202/sistema-prestamo/src/sistemaprestamo/modelo/Sesion.java</file>
+    </open-files>
+</project-private>
