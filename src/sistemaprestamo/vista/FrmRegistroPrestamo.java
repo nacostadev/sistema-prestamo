@@ -100,7 +100,7 @@ public class FrmRegistroPrestamo extends javax.swing.JFrame {
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         jPanel1.setBackground(new java.awt.Color(240, 244, 248));
-        jPanel1.setPreferredSize(new java.awt.Dimension(1100, 435));
+        jPanel1.setPreferredSize(new java.awt.Dimension(1000, 435));
         jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         panelHeader.setBackground(new java.awt.Color(24, 69, 131));
@@ -115,97 +115,97 @@ public class FrmRegistroPrestamo extends javax.swing.JFrame {
         lblSubtitulo.setText("Registre préstamos y genere su cronograma de pagos");
         panelHeader.add(lblSubtitulo, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 43, 800, 18));
 
-        jPanel1.add(panelHeader, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 1100, 70));
+        jPanel1.add(panelHeader, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 1000, 70));
 
         panelDatos.setBackground(new java.awt.Color(255, 255, 255));
         panelDatos.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         lblCliente.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         lblCliente.setText("Cliente *");
-        panelDatos.add(lblCliente, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 12, 500, 18));
-        panelDatos.add(cboCliente, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 34, 500, 28));
+        panelDatos.add(lblCliente, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 12, 450, 18));
+        panelDatos.add(cboCliente, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 34, 450, 28));
 
         lblTipoPrestamo.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         lblTipoPrestamo.setText("Tipo de préstamo *");
-        panelDatos.add(lblTipoPrestamo, new org.netbeans.lib.awtextra.AbsoluteConstraints(550, 12, 235, 18));
+        panelDatos.add(lblTipoPrestamo, new org.netbeans.lib.awtextra.AbsoluteConstraints(500, 12, 210, 18));
 
         cboTipoPrestamo.addActionListener(this::cboTipoPrestamoActionPerformed);
-        panelDatos.add(cboTipoPrestamo, new org.netbeans.lib.awtextra.AbsoluteConstraints(550, 34, 235, 28));
+        panelDatos.add(cboTipoPrestamo, new org.netbeans.lib.awtextra.AbsoluteConstraints(500, 34, 210, 28));
 
         lblModalidadPago.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         lblModalidadPago.setText("Modalidad de pago *");
-        panelDatos.add(lblModalidadPago, new org.netbeans.lib.awtextra.AbsoluteConstraints(815, 12, 235, 18));
-        panelDatos.add(cboModalidadPago, new org.netbeans.lib.awtextra.AbsoluteConstraints(815, 34, 235, 28));
+        panelDatos.add(lblModalidadPago, new org.netbeans.lib.awtextra.AbsoluteConstraints(740, 12, 210, 18));
+        panelDatos.add(cboModalidadPago, new org.netbeans.lib.awtextra.AbsoluteConstraints(740, 34, 210, 28));
 
         lblMonto.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         lblMonto.setText("Monto solicitado *");
-        panelDatos.add(lblMonto, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 77, 235, 18));
-        panelDatos.add(txtMonto, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 99, 235, 28));
+        panelDatos.add(lblMonto, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 77, 210, 18));
+        panelDatos.add(txtMonto, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 99, 210, 28));
 
         lblPlazo.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         lblPlazo.setText("Plazo (número de cuotas) *");
-        panelDatos.add(lblPlazo, new org.netbeans.lib.awtextra.AbsoluteConstraints(285, 77, 235, 18));
-        panelDatos.add(txtPlazo, new org.netbeans.lib.awtextra.AbsoluteConstraints(285, 99, 235, 28));
+        panelDatos.add(lblPlazo, new org.netbeans.lib.awtextra.AbsoluteConstraints(260, 77, 210, 18));
+        panelDatos.add(txtPlazo, new org.netbeans.lib.awtextra.AbsoluteConstraints(260, 99, 210, 28));
 
         lblTea.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         lblTea.setText("TEA (%) *");
-        panelDatos.add(lblTea, new org.netbeans.lib.awtextra.AbsoluteConstraints(550, 77, 235, 18));
-        panelDatos.add(txtTea, new org.netbeans.lib.awtextra.AbsoluteConstraints(550, 99, 235, 28));
+        panelDatos.add(lblTea, new org.netbeans.lib.awtextra.AbsoluteConstraints(500, 77, 210, 18));
+        panelDatos.add(txtTea, new org.netbeans.lib.awtextra.AbsoluteConstraints(500, 99, 210, 28));
 
         lblFechaDesembolso.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         lblFechaDesembolso.setText("Fecha de desembolso *");
-        panelDatos.add(lblFechaDesembolso, new org.netbeans.lib.awtextra.AbsoluteConstraints(815, 77, 235, 18));
+        panelDatos.add(lblFechaDesembolso, new org.netbeans.lib.awtextra.AbsoluteConstraints(740, 77, 210, 18));
 
         dcFechaDesembolso.setDateFormatString("dd/MM/yyyy");
-        panelDatos.add(dcFechaDesembolso, new org.netbeans.lib.awtextra.AbsoluteConstraints(815, 99, 235, 28));
+        panelDatos.add(dcFechaDesembolso, new org.netbeans.lib.awtextra.AbsoluteConstraints(740, 99, 210, 28));
 
         lblMoneda.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         lblMoneda.setText("Moneda *");
-        panelDatos.add(lblMoneda, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 142, 235, 18));
-        panelDatos.add(cboMoneda, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 164, 235, 28));
+        panelDatos.add(lblMoneda, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 142, 210, 18));
+        panelDatos.add(cboMoneda, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 164, 210, 28));
 
         lblGarantia.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         lblGarantia.setText("Garantía asociada (opcional)");
-        panelDatos.add(lblGarantia, new org.netbeans.lib.awtextra.AbsoluteConstraints(285, 142, 235, 18));
-        panelDatos.add(cboGarantia, new org.netbeans.lib.awtextra.AbsoluteConstraints(285, 164, 235, 28));
+        panelDatos.add(lblGarantia, new org.netbeans.lib.awtextra.AbsoluteConstraints(260, 142, 210, 18));
+        panelDatos.add(cboGarantia, new org.netbeans.lib.awtextra.AbsoluteConstraints(260, 164, 210, 28));
 
         lblDestino.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         lblDestino.setText("Destino del crédito (opcional)");
-        panelDatos.add(lblDestino, new org.netbeans.lib.awtextra.AbsoluteConstraints(550, 142, 500, 18));
-        panelDatos.add(txtDestino, new org.netbeans.lib.awtextra.AbsoluteConstraints(550, 164, 500, 28));
+        panelDatos.add(lblDestino, new org.netbeans.lib.awtextra.AbsoluteConstraints(500, 142, 450, 18));
+        panelDatos.add(txtDestino, new org.netbeans.lib.awtextra.AbsoluteConstraints(500, 164, 450, 28));
 
         lblObservaciones.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         lblObservaciones.setText("Observaciones (opcional)");
-        panelDatos.add(lblObservaciones, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 207, 500, 18));
+        panelDatos.add(lblObservaciones, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 207, 450, 18));
 
         txtObservaciones.setColumns(20);
         txtObservaciones.setRows(3);
         txtObservaciones.setLineWrap(true);
         jScrollPane1.setViewportView(txtObservaciones);
 
-        panelDatos.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 229, 1030, 55));
+        panelDatos.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 229, 930, 55));
 
         lblCondiciones.setFont(new java.awt.Font("Segoe UI", 2, 12)); // NOI18N
         lblCondiciones.setForeground(new java.awt.Color(102, 102, 102));
         lblCondiciones.setText("Seleccione un tipo de préstamo para ver el plazo, la TEA y el monto permitidos.");
-        panelDatos.add(lblCondiciones, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 295, 690, 20));
+        panelDatos.add(lblCondiciones, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 295, 600, 20));
 
         btnLimpiar.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnLimpiar.setForeground(new java.awt.Color(13, 71, 161));
         btnLimpiar.setText("Limpiar");
         btnLimpiar.addActionListener(this::btnLimpiarActionPerformed);
-        panelDatos.add(btnLimpiar, new org.netbeans.lib.awtextra.AbsoluteConstraints(730, 289, 120, 34));
+        panelDatos.add(btnLimpiar, new org.netbeans.lib.awtextra.AbsoluteConstraints(630, 289, 120, 34));
 
         btnRegistrar.setBackground(new java.awt.Color(13, 71, 161));
         btnRegistrar.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnRegistrar.setForeground(new java.awt.Color(255, 255, 255));
         btnRegistrar.setText("Registrar préstamo");
         btnRegistrar.addActionListener(this::btnRegistrarActionPerformed);
-        panelDatos.add(btnRegistrar, new org.netbeans.lib.awtextra.AbsoluteConstraints(860, 289, 190, 34));
+        panelDatos.add(btnRegistrar, new org.netbeans.lib.awtextra.AbsoluteConstraints(760, 289, 190, 34));
 
-        jPanel1.add(panelDatos, new org.netbeans.lib.awtextra.AbsoluteConstraints(15, 85, 1070, 335));
+        jPanel1.add(panelDatos, new org.netbeans.lib.awtextra.AbsoluteConstraints(15, 85, 970, 335));
 
-        getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 1100, 435));
+        getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 1000, 435));
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
