@@ -3,18 +3,11 @@ package sistemaprestamo.vista;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
-import javax.swing.ListSelectionModel;
-import javax.swing.table.DefaultTableModel;
 import sistemaprestamo.controlador.PrestamoController;
-import sistemaprestamo.modelo.Cronograma;
-import sistemaprestamo.modelo.DetalleCronograma;
 import sistemaprestamo.modelo.ItemCatalogo;
 import sistemaprestamo.modelo.Prestamo;
 import sistemaprestamo.modelo.Sesion;
@@ -29,27 +22,12 @@ public class FrmRegistroPrestamo extends javax.swing.JFrame {
 
     private static final ItemCatalogo SELECCIONAR = new ItemCatalogo("", "<<Seleccionar>>");
     private static final ItemCatalogo SIN_GARANTIA = new ItemCatalogo("", "<<Sin garantía>>");
-    private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private PrestamoController controlador;
-    private DefaultTableModel modeloPrestamos;
-    private DefaultTableModel modeloCronograma;
-    private List<Prestamo> prestamosMostrados = new ArrayList<>();
 
     public FrmRegistroPrestamo() {
         Usuario.validarSesionAutorizada(Sesion.getUsuario());
         initComponents();
-        modeloPrestamos = (DefaultTableModel) tblPrestamos.getModel();
-        modeloCronograma = (DefaultTableModel) tblCronograma.getModel();
-        modeloPrestamos.setRowCount(0);
-        modeloCronograma.setRowCount(0);
-        tblPrestamos.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        // al elegir otro préstamo se quita el cronograma que se estaba mostrando
-        tblPrestamos.getSelectionModel().addListSelectionListener(evento -> {
-            if (!evento.getValueIsAdjusting()) {
-                limpiarCronograma();
-            }
-        });
         ajustarFormulario();
         controlador = new PrestamoController(this);
         controlador.iniciar();
@@ -70,6 +48,11 @@ public class FrmRegistroPrestamo extends javax.swing.JFrame {
 
     public void setControlador(PrestamoController controlador) {
         this.controlador = controlador;
+    }
+
+    /** El formulario requiere una sesión iniciada, por eso se abre desde el login (Principal). */
+    public static void main(String[] args) {
+        sistemaprestamo.Principal.main(args);
     }
 
     /**
@@ -112,23 +95,12 @@ public class FrmRegistroPrestamo extends javax.swing.JFrame {
         lblCondiciones = new javax.swing.JLabel();
         btnLimpiar = new javax.swing.JButton();
         btnRegistrar = new javax.swing.JButton();
-        panelListado = new javax.swing.JPanel();
-        lblListado = new javax.swing.JLabel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        tblPrestamos = new javax.swing.JTable();
-        btnGenerarCronograma = new javax.swing.JButton();
-        lblAyudaCronograma = new javax.swing.JLabel();
-        panelCronograma = new javax.swing.JPanel();
-        lblCronograma = new javax.swing.JLabel();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        tblCronograma = new javax.swing.JTable();
-        lblResumenCronograma = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         jPanel1.setBackground(new java.awt.Color(240, 244, 248));
-        jPanel1.setPreferredSize(new java.awt.Dimension(1100, 1010));
+        jPanel1.setPreferredSize(new java.awt.Dimension(1100, 435));
         jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         panelHeader.setBackground(new java.awt.Color(24, 69, 131));
@@ -233,84 +205,7 @@ public class FrmRegistroPrestamo extends javax.swing.JFrame {
 
         jPanel1.add(panelDatos, new org.netbeans.lib.awtextra.AbsoluteConstraints(15, 85, 1070, 335));
 
-        panelListado.setBackground(new java.awt.Color(255, 255, 255));
-        panelListado.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
-
-        lblListado.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
-        lblListado.setText("Préstamos registrados");
-        panelListado.add(lblListado, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 10, 400, 24));
-
-        tblPrestamos.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-                "Código", "Cliente", "Tipo de préstamo", "Monto", "Plazo (cuotas)", "TEA", "Desembolso", "Estado"
-            }
-        ) {
-            boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false, false
-            };
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
-        tblPrestamos.getTableHeader().setReorderingAllowed(false);
-        jScrollPane2.setViewportView(tblPrestamos);
-
-        panelListado.add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 40, 1030, 145));
-
-        btnGenerarCronograma.setBackground(new java.awt.Color(13, 71, 161));
-        btnGenerarCronograma.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnGenerarCronograma.setForeground(new java.awt.Color(255, 255, 255));
-        btnGenerarCronograma.setText("Generar cronograma de pagos");
-        btnGenerarCronograma.addActionListener(this::btnGenerarCronogramaActionPerformed);
-        panelListado.add(btnGenerarCronograma, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 196, 260, 36));
-
-        lblAyudaCronograma.setFont(new java.awt.Font("Segoe UI", 2, 12)); // NOI18N
-        lblAyudaCronograma.setForeground(new java.awt.Color(102, 102, 102));
-        lblAyudaCronograma.setText("Seleccione un préstamo vigente de la lista y genere su cronograma de pagos.");
-        panelListado.add(lblAyudaCronograma, new org.netbeans.lib.awtextra.AbsoluteConstraints(295, 205, 750, 20));
-
-        jPanel1.add(panelListado, new org.netbeans.lib.awtextra.AbsoluteConstraints(15, 435, 1070, 245));
-
-        panelCronograma.setBackground(new java.awt.Color(255, 255, 255));
-        panelCronograma.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
-
-        lblCronograma.setFont(new java.awt.Font("Segoe UI", 1, 15)); // NOI18N
-        lblCronograma.setText("Cronograma de pagos");
-        panelCronograma.add(lblCronograma, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 10, 400, 24));
-
-        tblCronograma.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-                "N° de cuota", "Fecha de vencimiento", "Saldo anterior", "Interés", "Amortización", "Cuota", "Saldo pendiente"
-            }
-        ) {
-            boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, false
-            };
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
-        tblCronograma.getTableHeader().setReorderingAllowed(false);
-        jScrollPane3.setViewportView(tblCronograma);
-
-        panelCronograma.add(jScrollPane3, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 40, 1030, 215));
-
-        lblResumenCronograma.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        lblResumenCronograma.setForeground(new java.awt.Color(24, 69, 131));
-        lblResumenCronograma.setText("El cronograma se mostrará aquí al generarlo.");
-        panelCronograma.add(lblResumenCronograma, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 265, 1030, 20));
-
-        jPanel1.add(panelCronograma, new org.netbeans.lib.awtextra.AbsoluteConstraints(15, 695, 1070, 300));
-
-        getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 1100, 1010));
+        getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 1100, 435));
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -328,10 +223,6 @@ public class FrmRegistroPrestamo extends javax.swing.JFrame {
     private void btnRegistrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegistrarActionPerformed
         controlador.registrar();
     }//GEN-LAST:event_btnRegistrarActionPerformed
-
-    private void btnGenerarCronogramaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGenerarCronogramaActionPerformed
-        controlador.generarCronograma();
-    }//GEN-LAST:event_btnGenerarCronogramaActionPerformed
 
     // ------------------------------------------------------------------
     // Métodos que usa PrestamoController
@@ -380,61 +271,8 @@ public class FrmRegistroPrestamo extends javax.swing.JFrame {
         return codigoSeleccionado(cboTipoPrestamo);
     }
 
-    /** Código del préstamo elegido en la lista; vacío si no hay ninguno seleccionado. */
-    public String obtenerCodigoPrestamoSeleccionado() {
-        int fila = tblPrestamos.getSelectedRow();
-        if (fila < 0) {
-            return "";
-        }
-        return prestamosMostrados.get(tblPrestamos.convertRowIndexToModel(fila)).getCodigo();
-    }
-
     public void mostrarCondiciones(String texto) {
         lblCondiciones.setText(texto);
-    }
-
-    public void mostrarPrestamos(List<Prestamo> prestamos) {
-        prestamosMostrados = new ArrayList<>(prestamos);
-        modeloPrestamos.setRowCount(0);
-        for (Prestamo prestamo : prestamosMostrados) {
-            modeloPrestamos.addRow(new Object[]{
-                prestamo.getCodigo(),
-                prestamo.getClienteCodigo() + " - " + prestamo.getClienteNombre(),
-                prestamo.getTipoPrestamoNombre(),
-                dinero(prestamo.getMonedaSimbolo(), prestamo.getMontoSolicitado()),
-                prestamo.getPlazoCuotas(),
-                prestamo.getTea().movePointRight(2).stripTrailingZeros().toPlainString() + " %",
-                prestamo.getFechaDesembolso().format(FORMATO_FECHA),
-                prestamo.getEstadoNombre()
-            });
-        }
-        limpiarCronograma();
-    }
-
-    /** HU-03 CA-03 / RN-07: muestra todas las cuotas con sus cálculos. */
-    public void mostrarCronograma(Cronograma cronograma) {
-        String simbolo = cronograma.getPrestamo().getMonedaSimbolo();
-        modeloCronograma.setRowCount(0);
-        for (DetalleCronograma cuota : cronograma.getDetalle()) {
-            modeloCronograma.addRow(new Object[]{
-                cuota.getNumeroCuota(),
-                cuota.getFechaVencimiento().format(FORMATO_FECHA),
-                dinero(simbolo, cuota.getSaldoAnterior()),
-                dinero(simbolo, cuota.getInteres()),
-                dinero(simbolo, cuota.getAmortizacion()),
-                dinero(simbolo, cuota.getCuota()),
-                dinero(simbolo, cuota.getSaldoPendiente())
-            });
-        }
-        lblResumenCronograma.setText("Préstamo " + cronograma.getPrestamo().getCodigo()
-                + "  |  Cronograma " + cronograma.getCodigo()
-                + "  |  Total de intereses: " + dinero(simbolo, cronograma.calcularTotalIntereses())
-                + "  |  Total a pagar: " + dinero(simbolo, cronograma.calcularTotalPagado()));
-    }
-
-    public void limpiarCronograma() {
-        modeloCronograma.setRowCount(0);
-        lblResumenCronograma.setText("El cronograma se mostrará aquí al generarlo.");
     }
 
     public void limpiarFormulario() {
@@ -449,7 +287,6 @@ public class FrmRegistroPrestamo extends javax.swing.JFrame {
         dcFechaDesembolso.setDate(null);
         txtDestino.setText("");
         txtObservaciones.setText("");
-        tblPrestamos.clearSelection();
     }
 
     public void mostrarMensaje(String mensaje, String titulo, int tipo) {
@@ -507,12 +344,7 @@ public class FrmRegistroPrestamo extends javax.swing.JFrame {
         }
     }
 
-    private String dinero(String simbolo, BigDecimal monto) {
-        return (simbolo == null ? "" : simbolo + " ") + String.format(Locale.US, "%,.2f", monto);
-    }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnGenerarCronograma;
     private javax.swing.JButton btnLimpiar;
     private javax.swing.JButton btnRegistrar;
     private javax.swing.JComboBox<sistemaprestamo.modelo.ItemCatalogo> cboCliente;
@@ -523,32 +355,22 @@ public class FrmRegistroPrestamo extends javax.swing.JFrame {
     private com.toedter.calendar.JDateChooser dcFechaDesembolso;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JLabel lblAyudaCronograma;
     private javax.swing.JLabel lblCliente;
     private javax.swing.JLabel lblCondiciones;
-    private javax.swing.JLabel lblCronograma;
     private javax.swing.JLabel lblDestino;
     private javax.swing.JLabel lblFechaDesembolso;
     private javax.swing.JLabel lblGarantia;
-    private javax.swing.JLabel lblListado;
     private javax.swing.JLabel lblModalidadPago;
     private javax.swing.JLabel lblMoneda;
     private javax.swing.JLabel lblMonto;
     private javax.swing.JLabel lblObservaciones;
     private javax.swing.JLabel lblPlazo;
-    private javax.swing.JLabel lblResumenCronograma;
     private javax.swing.JLabel lblSubtitulo;
     private javax.swing.JLabel lblTea;
     private javax.swing.JLabel lblTipoPrestamo;
     private javax.swing.JLabel lblTitulo;
-    private javax.swing.JPanel panelCronograma;
     private javax.swing.JPanel panelDatos;
     private javax.swing.JPanel panelHeader;
-    private javax.swing.JPanel panelListado;
-    private javax.swing.JTable tblCronograma;
-    private javax.swing.JTable tblPrestamos;
     private javax.swing.JTextField txtDestino;
     private javax.swing.JTextField txtMonto;
     private javax.swing.JTextArea txtObservaciones;

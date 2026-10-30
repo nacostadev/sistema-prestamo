@@ -4,9 +4,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Locale;
 import javax.swing.JOptionPane;
-import sistemaprestamo.modelo.Cronograma;
 import sistemaprestamo.modelo.MontoInvalidoException;
-import sistemaprestamo.persistencia.CronogramaDAO;
 import sistemaprestamo.vista.FrmRegistroPrestamo;
 import java.sql.SQLException;
 import java.util.List;
@@ -31,7 +29,6 @@ import sistemaprestamo.persistencia.UsuarioDAO;
 public class PrestamoController {
 
     private FrmRegistroPrestamo vista;
-    private final CronogramaDAO cronogramaDAO = new CronogramaDAO();
     private List<TipoPrestamo> tiposPrestamo = new ArrayList<>();
 
     public PrestamoController(FrmRegistroPrestamo vista) {
@@ -129,18 +126,8 @@ public class PrestamoController {
             vista.cargarModalidadesPago(catalogoDAO.listarModalidadesPago());
             vista.cargarMonedas(catalogoDAO.listarMonedas());
             vista.cargarGarantias(catalogoDAO.listarGarantias());
-            listar();
         } catch (SQLException excepcion) {
             vista.mostrarMensaje("No se pudieron cargar los datos del formulario: " + excepcion.getMessage(),
-                    "Error de base de datos", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    public void listar() {
-        try {
-            vista.mostrarPrestamos(prestamoDAO.listar());
-        } catch (SQLException excepcion) {
-            vista.mostrarMensaje("Error al consultar los préstamos: " + excepcion.getMessage(),
                     "Error de base de datos", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -170,7 +157,6 @@ public class PrestamoController {
             vista.mostrarMensaje("El préstamo fue registrado correctamente. Código: " + codigo,
                     "Registro", JOptionPane.INFORMATION_MESSAGE);
             vista.limpiarFormulario();
-            listar();
         } catch (MontoInvalidoException excepcion) {
             // CA-04: mensaje de ERROR indicando que el monto no es válido
             vista.mostrarMensaje(excepcion.getMessage(), "Monto no válido", JOptionPane.ERROR_MESSAGE);
@@ -181,48 +167,6 @@ public class PrestamoController {
             // CA-07: error durante la transacción
             vista.mostrarMensaje("No fue posible registrar el préstamo financiero. Detalle: " + excepcion.getMessage(),
                     "Error de base de datos", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    // ------------------------------------------------------------------
-    // HU-03: Generar cronograma de pagos
-    // ------------------------------------------------------------------
-    public void generarCronograma() {
-        try {
-            Usuario.validarSesionIniciada(Sesion.getUsuario());
-            String codigo = vista.obtenerCodigoPrestamoSeleccionado();
-            if (codigo.isEmpty()) {
-                throw new IllegalArgumentException(
-                        "Seleccione un préstamo registrado de la lista para generar su cronograma.");
-            }
-            Prestamo prestamo = prestamoDAO.buscarPorCodigo(codigo);
-            if (prestamo == null) {
-                throw new IllegalArgumentException("El préstamo seleccionado no está registrado.");
-            }
-            prestamo.validarPuedeGenerarCronograma();                          // RN-01 (CA-05) y RN-02 (CA-04)
-            TipoPrestamo tipo = prestamoDAO.buscarTipoPrestamo(prestamo.getTipoPrestamoCodigo());
-            prestamo.validarCondiciones(tipo);                                 // RN-08 (CA-04)
-
-            if (!vista.confirmar("¿Desea generar el cronograma de pagos del préstamo " + codigo + "?",
-                    "Generar cronograma")) {
-                return;
-            }
-            Cronograma cronograma = prestamo.generarCronograma();              // RN-03 a RN-05 y CA-07
-            cronogramaDAO.guardar(cronograma);                                 // RN-06 y RN-09
-
-            vista.mostrarCronograma(cronograma);                               // CA-03 (RN-07)
-            vista.mostrarMensaje("El cronograma de pagos fue generado correctamente.",
-                    "Cronograma", JOptionPane.INFORMATION_MESSAGE);
-        } catch (IllegalArgumentException excepcion) {
-            // CA-04 y CA-05: advertencia y no se genera
-            vista.mostrarMensaje(excepcion.getMessage(), "Validación", JOptionPane.WARNING_MESSAGE);
-        } catch (IllegalStateException | ArithmeticException excepcion) {
-            // CA-06 y CA-07: error de cálculo o de consistencia, no se guarda
-            vista.mostrarMensaje("Error durante la generación del cronograma: " + excepcion.getMessage(),
-                    "Error de cálculo", JOptionPane.ERROR_MESSAGE);
-        } catch (SQLException excepcion) {
-            vista.mostrarMensaje("Error al guardar el cronograma (" + excepcion.getMessage()
-                    + "). No se guardó el cronograma.", "Error de base de datos", JOptionPane.ERROR_MESSAGE);
         }
     }
 
