@@ -189,8 +189,8 @@ public class FrmMenuOpcion extends javax.swing.JFrame {
         agregarOpcion(panelItems, MenuController.PRESTAMO, "\uD83D\uDCC4", "Registrar Préstamo");
         agregarOpcion(panelItems, MenuController.CRONOGRAMA, "\uD83D\uDCC5", "Cronograma de Pagos");
         //agregarOpcion(panelItems, MenuController.CONSULTA, "\uD83D\uDD0D", "Consultar Préstamos");
-        agregarOpcion(panelItems, MenuController.REPORTES, "\uD83D\uDCCA", "Reportes");
-        agregarOpcion(panelItems, MenuController.CONFIG,   "\u2699",       "Configuración");
+        //agregarOpcion(panelItems, MenuController.REPORTES, "\uD83D\uDCCA", "Reportes");
+        //agregarOpcion(panelItems, MenuController.CONFIG,   "\u2699",       "Configuración");
         barra.add(panelItems, BorderLayout.CENTER);
  
         JPanel inferior = new JPanel();
