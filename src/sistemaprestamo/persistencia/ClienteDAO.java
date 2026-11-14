@@ -81,10 +81,6 @@ public class ClienteDAO {
         return exactos;
     }
 
-    /**
-     * Código de estado de cada préstamo del cliente. La regla de qué estados impiden
-     * desactivar al cliente se aplica en Java (Cliente.validarPuedeDesactivarse).
-     */
     public List<String> listarEstadosPrestamos(String codigoCliente) throws SQLException {
         List<String> estados = new ArrayList<>();
         try (Connection conexion = Conexion.getConnection();
