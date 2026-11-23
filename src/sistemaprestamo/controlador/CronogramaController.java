@@ -109,6 +109,10 @@ public class CronogramaController {
         } catch (ArithmeticException | SQLException excepcion) {
             vista.mostrarMensaje("No fue posible generar el cronograma de pagos. Detalle: "
                     + excepcion.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (RuntimeException excepcion) {
+            vista.mostrarMensaje("Ocurrió un error inesperado durante el cálculo del cronograma. "
+                    + "No se guardó el cronograma. Detalle: " + excepcion.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 

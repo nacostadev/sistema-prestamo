@@ -39,10 +39,10 @@ public class CronogramaDAO {
 
 
     public String guardar(Cronograma cronograma) throws SQLException {
-        if (!cronograma.esConsistente()) {
+        if (cronograma == null || !cronograma.esConsistente()) {
             throw new CronogramaInconsistenteException(
                     "El cronograma no es consistente: el total de amortizaciones no coincide con el monto "
-                    + "del préstamo. No se guardó el cronograma.");
+                    + "del préstamo o el saldo pendiente final no es cero. No se guardó el cronograma.");
         }
         try (Connection conexion = Conexion.getConnection()) {
             conexion.setAutoCommit(false);
@@ -75,9 +75,10 @@ public class CronogramaDAO {
             try (ResultSet resultado = sentencia.executeQuery()) {
                 while (resultado.next()) {
                     codigoCronograma = resultado.getString("CronogramasCodigo").trim();
+                    java.sql.Date fecha = resultado.getDate("DetalleFechaVencimiento");
                     cuotas.add(new DetalleCronograma(
                             resultado.getInt("DetalleNumeroCuota"),
-                            resultado.getDate("DetalleFechaVencimiento").toLocalDate(),
+                            fecha == null ? null : fecha.toLocalDate(),
                             resultado.getBigDecimal("DetalleSaldoAnterior"),
                             resultado.getBigDecimal("DetalleInteres"),
                             resultado.getBigDecimal("DetalleAmortizacion"),

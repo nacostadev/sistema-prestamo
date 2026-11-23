@@ -256,11 +256,12 @@ public class PrestamoDAO {
         prestamo.setTipoPrestamoCodigo(resultado.getString("TiposPrestamoCodigo").trim());
         prestamo.setTipoPrestamoNombre(resultado.getString("TiposPrestamoNombre"));
         prestamo.setMontoSolicitado(resultado.getBigDecimal("PrestamosMontoSolicitado"));
-        prestamo.setPlazoCuotas(resultado.getInt("PrestamosPlazoCuotas"));
+        prestamo.setPlazo(resultado.getBigDecimal("PrestamosPlazoCuotas"));
         prestamo.setTea(resultado.getBigDecimal("PrestamosTEA"));
         prestamo.setModalidadPagoCodigo(resultado.getString("ModalidadesPagoCodigo").trim());
         prestamo.setModalidadPagoNombre(resultado.getString("ModalidadesPagoNombre"));
-        prestamo.setFechaDesembolso(resultado.getDate("PrestamosFechaDesembolso").toLocalDate());
+        java.sql.Date fechaDesembolso = resultado.getDate("PrestamosFechaDesembolso");
+        prestamo.setFechaDesembolso(fechaDesembolso == null ? null : fechaDesembolso.toLocalDate());
         prestamo.setMonedaCodigo(resultado.getString("MonedasCodigo").trim());
         prestamo.setMonedaSimbolo(resultado.getString("MonedasSimbolo"));
         String garantia = resultado.getString("GarantiasCodigo");

@@ -35,18 +35,22 @@ public class FrmCronogramaPagos extends javax.swing.JFrame {
     }
     public String obtenerCodigoPrestamo() { int i=cboPrestamo.getSelectedIndex()-1; return i<0 ? "" : prestamos.get(i).getCodigo(); }
     public void mostrarPrestamo(Prestamo p) {
-        txtMonto.setText(p==null ? "" : dinero(p.getMonedaSimbolo(),p.getMontoSolicitado()));
-        txtPlazo.setText(p==null ? "" : String.valueOf(p.getPlazoCuotas()));
-        txtTea.setText(p==null ? "" : p.getTea().movePointRight(2).stripTrailingZeros().toPlainString());
-        txtFecha.setText(p==null ? "" : p.getFechaDesembolso().format(FECHA));
+        txtMonto.setText(p==null || p.getMontoSolicitado()==null ? "" : dinero(p.getMonedaSimbolo(),p.getMontoSolicitado()));
+        txtPlazo.setText(p==null || p.getPlazo()==null ? "" : p.getPlazo().stripTrailingZeros().toPlainString());
+        txtTea.setText(p==null || p.getTea()==null ? "" : p.getTea().movePointRight(2).stripTrailingZeros().toPlainString());
+        txtFecha.setText(p==null || p.getFechaDesembolso()==null ? "" : p.getFechaDesembolso().format(FECHA));
         lblEstado.setText(p==null ? "Seleccione un préstamo para ver sus datos." : "Cliente: "+p.getClienteNombre()+" | Estado del préstamo: "+p.getEstadoNombre());
     }
     public void mostrarCronograma(Cronograma c) {
         DefaultTableModel m=(DefaultTableModel)tblCronograma.getModel(); m.setRowCount(0);
         Prestamo p=c.getPrestamo();
-        for(DetalleCronograma d:c.getDetalle()) m.addRow(new Object[]{d.getNumeroCuota(),d.getFechaVencimiento().format(FECHA),dinero(p.getMonedaSimbolo(),d.getSaldoAnterior()),dinero(p.getMonedaSimbolo(),d.getInteres()),dinero(p.getMonedaSimbolo(),d.getAmortizacion()),dinero(p.getMonedaSimbolo(),d.getCuota()),dinero(p.getMonedaSimbolo(),d.getSaldoPendiente())});
+        for(DetalleCronograma d:c.getDetalle()) m.addRow(new Object[]{d.getNumeroCuota(),(d.getFechaVencimiento()==null ? "" : d.getFechaVencimiento().format(FECHA)),dinero(p.getMonedaSimbolo(),d.getSaldoAnterior()),dinero(p.getMonedaSimbolo(),d.getInteres()),dinero(p.getMonedaSimbolo(),d.getAmortizacion()),dinero(p.getMonedaSimbolo(),d.getCuota()),dinero(p.getMonedaSimbolo(),d.getSaldoPendiente())});
         lblResumen.setText("Cronograma "+c.getCodigo()+" | Total amortizado: "+dinero(p.getMonedaSimbolo(),c.calcularTotalAmortizado())+" | Intereses: "+dinero(p.getMonedaSimbolo(),c.calcularTotalIntereses()));
-        lblTem.setText("TEM: "+p.calcularTem().movePointRight(2).setScale(6,java.math.RoundingMode.HALF_UP)+" % | Cuota fija: "+dinero(p.getMonedaSimbolo(),p.calcularCuotaFija()));
+        try {
+            lblTem.setText("TEM: "+p.calcularTem().movePointRight(2).setScale(6,java.math.RoundingMode.HALF_UP)+" % | Cuota fija: "+dinero(p.getMonedaSimbolo(),p.calcularCuotaFija()));
+        } catch (RuntimeException ex) {
+            lblTem.setText("TEM: | Cuota fija:");
+        }
     }
     public static void main(String[] args) {
         /* Configuración del Look and Feel (L&F) Nimbus para la interfaz */
@@ -71,7 +75,7 @@ public class FrmCronogramaPagos extends javax.swing.JFrame {
     public void limpiarCronograma() { ((DefaultTableModel)tblCronograma.getModel()).setRowCount(0); lblResumen.setText("El cronograma guardado se mostrará aquí."); lblTem.setText("TEM y cuota fija se calcularán al generar."); }
     public void mostrarMensaje(String mensaje,String titulo,int tipo) { JOptionPane.showMessageDialog(this,mensaje,titulo,tipo); }
     public boolean confirmar(String mensaje,String titulo) { return JOptionPane.showConfirmDialog(this,mensaje,titulo,JOptionPane.YES_NO_OPTION)==JOptionPane.YES_OPTION; }
-    private String dinero(String simbolo,java.math.BigDecimal valor) { return (simbolo==null ? "" : simbolo+" ")+String.format(Locale.US,"%,.2f",valor); }
+    private String dinero(String simbolo,java.math.BigDecimal valor) { return valor==null ? "" : (simbolo==null ? "" : simbolo+" ")+String.format(Locale.US,"%,.2f",valor); }
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {

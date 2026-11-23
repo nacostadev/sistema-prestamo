@@ -15,6 +15,8 @@ public class Prestamo {
 
     private static final MathContext PRECISION = new MathContext(30, RoundingMode.HALF_UP);
     private static final int ESCALA_MONEDA = 2;
+    public static final String MENSAJE_PLAZO_ENTERO =
+            "El plazo debe ser un número entero positivo de cuotas (sin decimales). No se generó el cronograma.";
 
     private String codigo;
     private String clienteCodigo;
@@ -22,7 +24,7 @@ public class Prestamo {
     private String tipoPrestamoCodigo;
     private String tipoPrestamoNombre;
     private BigDecimal montoSolicitado;
-    private int plazoCuotas;
+    private BigDecimal plazo;
     private BigDecimal tea;
     private String modalidadPagoCodigo;
     private String modalidadPagoNombre;
@@ -95,12 +97,35 @@ public class Prestamo {
         this.montoSolicitado = montoSolicitado;
     }
 
+    /** Plazo como número entero de cuotas; devuelve 0 si el plazo es nulo o no es un entero válido. */
     public int getPlazoCuotas() {
-        return plazoCuotas;
+        return tienePlazoEntero() ? plazo.intValueExact() : 0;
     }
 
     public void setPlazoCuotas(int plazoCuotas) {
-        this.plazoCuotas = plazoCuotas;
+        this.plazo = BigDecimal.valueOf(plazoCuotas);
+    }
+
+    /** Plazo tal como se leyó (puede ser nulo o decimal); permite validarlo sin truncarlo. */
+    public BigDecimal getPlazo() {
+        return plazo;
+    }
+
+    public void setPlazo(BigDecimal plazo) {
+        this.plazo = plazo;
+    }
+
+    /** true si el plazo existe y es un número entero (sin parte decimal). */
+    public boolean tienePlazoEntero() {
+        if (plazo == null) {
+            return false;
+        }
+        try {
+            plazo.intValueExact();
+            return true;
+        } catch (ArithmeticException excepcion) {
+            return false;
+        }
     }
 
     public BigDecimal getTea() {
@@ -204,7 +229,7 @@ public class Prestamo {
         if (montoSolicitado == null) {
             faltantes.add("monto solicitado");
         }
-        if (plazoCuotas <= 0) {
+        if (plazo == null || plazo.signum() <= 0) {
             faltantes.add("plazo (número de cuotas)");
         }
         if (tea == null) {
@@ -220,6 +245,9 @@ public class Prestamo {
                     "Complete los campos obligatorios: " + String.join(", ", faltantes) + ".");
         }
 
+        if (!tienePlazoEntero()) {
+            throw new IllegalArgumentException(MENSAJE_PLAZO_ENTERO);
+        }
         if (montoSolicitado.signum() <= 0) {
             throw new IllegalArgumentException("El monto solicitado debe ser mayor que cero.");
         }
@@ -293,7 +321,8 @@ public class Prestamo {
     }
 
     public boolean plazoCumple(TipoPrestamo tipo) {
-        return plazoCuotas >= tipo.getPlazoMinimo() && plazoCuotas <= tipo.getPlazoMaximo();
+        return tienePlazoEntero() && getPlazoCuotas() >= tipo.getPlazoMinimo()
+                && getPlazoCuotas() <= tipo.getPlazoMaximo();
     }
 
     public boolean teaCumple(TipoPrestamo tipo) {
@@ -314,27 +343,63 @@ public class Prestamo {
         if (!estaVigente()) {
             throw new IllegalArgumentException("Solo se puede generar el cronograma de un préstamo vigente.");
         }
-        if (montoSolicitado == null || montoSolicitado.signum() <= 0
-                || plazoCuotas <= 0
-                || tea == null || tea.signum() <= 0
-                || fechaDesembolso == null) {
+        List<String> faltantes = new ArrayList<>();
+        if (montoSolicitado == null) {
+            faltantes.add("monto");
+        }
+        if (plazo == null) {
+            faltantes.add("plazo");
+        }
+        if (tea == null) {
+            faltantes.add("TEA");
+        }
+        if (fechaDesembolso == null) {
+            faltantes.add("fecha de desembolso");
+        }
+        if (!faltantes.isEmpty()) {
+            throw new IllegalArgumentException("Faltan datos obligatorios del préstamo: "
+                    + String.join(", ", faltantes) + ". No se generó el cronograma.");
+        }
+        if (!tienePlazoEntero()) {
+            throw new IllegalArgumentException(MENSAJE_PLAZO_ENTERO);
+        }
+        if (montoSolicitado.signum() <= 0 || plazo.signum() <= 0 || tea.signum() <= 0) {
             throw new IllegalArgumentException(
                     "Los datos del préstamo no son válidos (monto, plazo o TEA). No se generó el cronograma.");
         }
     }
 
+    /** TEM = (1 + TEA)^(1/12) - 1. Lanza ArithmeticException si no se puede calcular. */
     public BigDecimal calcularTem() {
+        if (tea == null) {
+            throw new ArithmeticException("No se pudo calcular la TEM: la TEA no está definida.");
+        }
         double tem = Math.pow(1.0 + tea.doubleValue(), 1.0 / 12.0) - 1.0;
+        if (Double.isNaN(tem) || Double.isInfinite(tem) || tem <= 0) {
+            throw new ArithmeticException("No se pudo calcular la TEM con la TEA indicada.");
+        }
         return BigDecimal.valueOf(tem);
     }
 
+    /** Cuota fija mensual (método francés). Lanza ArithmeticException si no se puede calcular. */
     public BigDecimal calcularCuotaFija() {
+        if (montoSolicitado == null || !tienePlazoEntero() || getPlazoCuotas() <= 0) {
+            throw new ArithmeticException("No se pudo calcular la cuota: monto o plazo no válidos.");
+        }
         BigDecimal tem = calcularTem();
-        BigDecimal factor = BigDecimal.ONE.add(tem).pow(plazoCuotas, PRECISION);
+        BigDecimal factor = BigDecimal.ONE.add(tem).pow(getPlazoCuotas(), PRECISION);
+        BigDecimal denominador = factor.subtract(BigDecimal.ONE);
+        if (denominador.signum() <= 0) {
+            throw new ArithmeticException("No se pudo calcular la cuota mensual.");
+        }
         BigDecimal cuota = montoSolicitado.multiply(tem, PRECISION)
                 .multiply(factor, PRECISION)
-                .divide(factor.subtract(BigDecimal.ONE), PRECISION);
-        return cuota.setScale(ESCALA_MONEDA, RoundingMode.HALF_UP);
+                .divide(denominador, PRECISION);
+        cuota = cuota.setScale(ESCALA_MONEDA, RoundingMode.HALF_UP);
+        if (cuota.signum() <= 0) {
+            throw new ArithmeticException("La cuota mensual calculada no es válida.");
+        }
+        return cuota;
     }
 
     public BigDecimal calcularInteres(BigDecimal saldoAnterior) {
@@ -349,6 +414,7 @@ public class Prestamo {
         BigDecimal cuotaFija = calcularCuotaFija();
         BigDecimal saldo = montoSolicitado.setScale(ESCALA_MONEDA, RoundingMode.HALF_UP);
 
+        int plazoCuotas = getPlazoCuotas();
         for (int numero = 1; numero <= plazoCuotas; numero++) {
             BigDecimal interes = calcularInteres(saldo);
             BigDecimal amortizacion;
@@ -369,7 +435,7 @@ public class Prestamo {
 
         if (!cronograma.esConsistente()) {
             throw new CronogramaInconsistenteException("El total de amortizaciones no coincide con el monto del "
-                    + "préstamo. No se guardó el cronograma.");
+                    + "préstamo o el saldo pendiente final no es cero. No se guardó el cronograma.");
         }
         return cronograma;
     }

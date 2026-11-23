@@ -60,6 +60,8 @@ import static org.junit.Assert.*;
 public class CronogramaTest {
 
     private static final String MENSAJE_NO_VIGENTE = "Solo se puede generar el cronograma de un préstamo vigente";
+    private static final String MENSAJE_FALTANTES = "Faltan datos obligatorios del préstamo";
+    private static final String MENSAJE_PLAZO = "El plazo debe ser un número entero positivo";
     private static final String MENSAJE_DATOS = "Los datos del préstamo no son válidos";
     private static final String MENSAJE_INCONSISTENTE = "El total de amortizaciones no coincide";
 
@@ -120,7 +122,7 @@ public class CronogramaTest {
         System.out.println("validarPuedeGenerarCronograma - CP02 monto nulo");
         Prestamo prestamo = crearPrestamo("10000", 5, "0.2000", "Vigente");
         prestamo.setMontoSolicitado(null);
-        assertValidacionFalla(prestamo, MENSAJE_DATOS);
+        assertValidacionFalla(prestamo, MENSAJE_FALTANTES);
     }
 
     @Test
@@ -140,7 +142,7 @@ public class CronogramaTest {
         System.out.println("validarPuedeGenerarCronograma - CP05 TEA nula");
         Prestamo prestamo = crearPrestamo("10000", 5, "0.2000", "Vigente");
         prestamo.setTea(null);
-        assertValidacionFalla(prestamo, MENSAJE_DATOS);
+        assertValidacionFalla(prestamo, MENSAJE_FALTANTES);
     }
 
     @Test
@@ -154,7 +156,7 @@ public class CronogramaTest {
         System.out.println("validarPuedeGenerarCronograma - CP07 fecha de desembolso nula");
         Prestamo prestamo = crearPrestamo("10000", 5, "0.2000", "Vigente");
         prestamo.setFechaDesembolso(null);
-        assertValidacionFalla(prestamo, MENSAJE_DATOS);
+        assertValidacionFalla(prestamo, MENSAJE_FALTANTES);
     }
 
     @Test
@@ -264,6 +266,72 @@ public class CronogramaTest {
         Cronograma cronograma = crearCronograma(
                 crearCuota(1, "1000.00", "500.00", "-1.00"),
                 crearCuota(2, "500.00", "500.00", "0.00"));
+        assertFalse(cronograma.esConsistente());
+    }
+
+    // ------------------------------------------------------------------
+    // Correcciones: plazo decimal / nulo, errores de cálculo y consistencia
+    // ------------------------------------------------------------------
+
+    @Test
+    public void testValidarPlazoDecimalNoPermitido() {
+        Prestamo prestamo = crearPrestamo("10000", 5, "0.2000", "Vigente");
+        prestamo.setPlazo(new BigDecimal("12.5"));
+        assertValidacionFalla(prestamo, MENSAJE_PLAZO);
+    }
+
+    @Test
+    public void testValidarPlazoEnteroConDecimalesCeroEsValido() {
+        Prestamo prestamo = crearPrestamo("10000", 5, "0.2000", "Vigente");
+        prestamo.setPlazo(new BigDecimal("6.00"));
+        prestamo.validarPuedeGenerarCronograma();
+        assertEquals(6, prestamo.generarCronograma().getDetalle().size());
+    }
+
+    @Test
+    public void testValidarPlazoNuloEsDatoFaltante() {
+        Prestamo prestamo = crearPrestamo("10000", 5, "0.2000", "Vigente");
+        prestamo.setPlazo(null);
+        assertValidacionFalla(prestamo, MENSAJE_FALTANTES);
+    }
+
+    @Test
+    public void testGenerarConPlazoDecimalNoGeneraCronograma() {
+        Prestamo prestamo = crearPrestamo("10000", 5, "0.2000", "Vigente");
+        prestamo.setPlazo(new BigDecimal("5.7"));
+        try {
+            prestamo.generarCronograma();
+            fail("Debió lanzar IllegalArgumentException");
+        } catch (IllegalArgumentException esperada) {
+            assertTrue(esperada.getMessage().startsWith(MENSAJE_PLAZO));
+        }
+    }
+
+    @Test(expected = ArithmeticException.class)
+    public void testCalcularTemConTeaMuyGrandeLanzaArithmeticException() {
+        crearPrestamo("10000", 5, "1E+400", "Vigente").calcularTem();
+    }
+
+    @Test(expected = ArithmeticException.class)
+    public void testCalcularTemSinTeaLanzaArithmeticException() {
+        Prestamo prestamo = crearPrestamo("10000", 5, "0.2000", "Vigente");
+        prestamo.setTea(null);
+        prestamo.calcularTem();
+    }
+
+    @Test
+    public void testEsConsistenteAceptaDiferenciaDeRedondeo() {
+        Cronograma cronograma = crearCronograma(
+                crearCuota(1, "1000.00", "600.00", "400.00"),
+                crearCuota(2, "400.00", "399.99", "0.01"));
+        assertTrue(cronograma.esConsistente());
+    }
+
+    @Test
+    public void testEsConsistenteRechazaValoresNulos() {
+        Cronograma cronograma = crearCronograma(
+                new DetalleCronograma(1, LocalDate.of(2026, 5, 1), new BigDecimal("1000.00"), null,
+                        new BigDecimal("1000.00"), new BigDecimal("1000.00"), new BigDecimal("0.00")));
         assertFalse(cronograma.esConsistente());
     }
 }

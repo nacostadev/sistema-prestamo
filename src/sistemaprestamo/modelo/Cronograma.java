@@ -9,6 +9,9 @@ import java.util.List;
 
 public class Cronograma {
 
+    /** Diferencia máxima aceptada por redondeo a 2 decimales. */
+    private static final BigDecimal TOLERANCIA_REDONDEO = new BigDecimal("0.01");
+
     private String codigo;
     private final Prestamo prestamo;
     private final List<DetalleCronograma> detalle = new ArrayList<>();
@@ -49,7 +52,9 @@ public class Cronograma {
     public BigDecimal calcularTotalAmortizado() {
         BigDecimal total = BigDecimal.ZERO;
         for (DetalleCronograma cuota : detalle) {
-            total = total.add(cuota.getAmortizacion());
+            if (cuota.getAmortizacion() != null) {
+                total = total.add(cuota.getAmortizacion());
+            }
         }
         return total;
     }
@@ -57,7 +62,9 @@ public class Cronograma {
     public BigDecimal calcularTotalIntereses() {
         BigDecimal total = BigDecimal.ZERO;
         for (DetalleCronograma cuota : detalle) {
-            total = total.add(cuota.getInteres());
+            if (cuota.getInteres() != null) {
+                total = total.add(cuota.getInteres());
+            }
         }
         return total;
     }
@@ -65,23 +72,42 @@ public class Cronograma {
     public BigDecimal calcularTotalPagado() {
         BigDecimal total = BigDecimal.ZERO;
         for (DetalleCronograma cuota : detalle) {
-            total = total.add(cuota.getCuota());
+            if (cuota.getCuota() != null) {
+                total = total.add(cuota.getCuota());
+            }
         }
         return total;
     }
 
+    /**
+     * Valida la consistencia matemática: la suma de amortizaciones coincide con el monto del préstamo,
+     * el saldo pendiente final es cero (ambos con tolerancia de redondeo) y cada cuota cuadra.
+     */
     public boolean esConsistente() {
-        if (detalle.isEmpty()) {
+        if (detalle.isEmpty() || prestamo == null || prestamo.getMontoSolicitado() == null) {
             return false;
         }
         BigDecimal monto = prestamo.getMontoSolicitado().setScale(2, RoundingMode.HALF_UP);
-        boolean cuadra = calcularTotalAmortizado().compareTo(monto) == 0
-                && detalle.get(detalle.size() - 1).getSaldoPendiente().signum() == 0;
         for (DetalleCronograma cuota : detalle) {
-            if (cuota.getAmortizacion().signum() < 0 || cuota.getSaldoPendiente().signum() < 0) {
-                cuadra = false;
+            if (!cuotaCuadra(cuota)) {
+                return false;
             }
         }
-        return cuadra;
+        BigDecimal saldoFinal = detalle.get(detalle.size() - 1).getSaldoPendiente();
+        return calcularTotalAmortizado().subtract(monto).abs().compareTo(TOLERANCIA_REDONDEO) <= 0
+                && saldoFinal.abs().compareTo(TOLERANCIA_REDONDEO) <= 0;
+    }
+
+    private boolean cuotaCuadra(DetalleCronograma cuota) {
+        if (cuota.getSaldoAnterior() == null || cuota.getInteres() == null
+                || cuota.getAmortizacion() == null || cuota.getCuota() == null
+                || cuota.getSaldoPendiente() == null) {
+            return false;
+        }
+        if (cuota.getAmortizacion().signum() < 0 || cuota.getSaldoPendiente().signum() < 0) {
+            return false;
+        }
+        BigDecimal saldoEsperado = cuota.getSaldoAnterior().subtract(cuota.getAmortizacion());
+        return saldoEsperado.subtract(cuota.getSaldoPendiente()).abs().compareTo(TOLERANCIA_REDONDEO) <= 0;
     }
 }
