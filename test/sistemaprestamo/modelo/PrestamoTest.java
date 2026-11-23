@@ -282,8 +282,9 @@ public class PrestamoTest {
 
     @Test
     public void testValidarCliente_activoVigenteEvaluacion() {
+        espera(IllegalArgumentException.class, "préstamo vigente", () ->
         prestamo("10000",12,"0.2").validarCliente(cliente("A"),
-        Arrays.asList(existente("Vigente"),existente("En evaluación")));
+        Arrays.asList(existente("Vigente"),existente("En evaluación"))));
     }
 
     @Test
@@ -324,8 +325,15 @@ public class PrestamoTest {
 
     @Test
     public void testValidarCliente_prestamoConEstadoNulo() {
+        espera(IllegalArgumentException.class, "préstamo vigente", () ->
         prestamo("10000",12,"0.2").validarCliente(cliente("A"),
-        Arrays.asList(existente(null),existente("Vigente")));
+        Arrays.asList(existente(null),existente("Vigente"))));
+    }
+
+    @Test
+    public void testValidarCliente_prestamoFinalizadoNoBloquea() {
+        prestamo("10000",12,"0.2").validarCliente(cliente("A"),
+                Arrays.asList(existente("Cancelado")));
     }
 
     // BLOQUE 4: HU-02 RN-04, RN-05 / CA-04, CA-06: Verifica la secuencia real: primero plazo y TEA, después monto y política crediticia.

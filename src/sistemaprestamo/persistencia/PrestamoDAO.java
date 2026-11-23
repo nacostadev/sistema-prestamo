@@ -89,6 +89,10 @@ public class PrestamoDAO {
                     }
                 }
 
+                // Comprobar de nuevo antes de insertar, dentro de la transacción.
+                // No depender solamente de la selección realizada en el formulario.
+                validarSituacionClienteEnTransaccion(conexion, prestamo.getClienteCodigo());
+
                 String codigo = Conexion.siguienteCodigo(
                         conexion,
                         SQL_MAXIMO_CODIGO,
@@ -169,6 +173,44 @@ public class PrestamoDAO {
                 throw excepcion;
             }
         }
+    }
+
+    /** Segunda validación de cliente bajo la transacción de registro. */
+    private void validarSituacionClienteEnTransaccion(Connection conexion, String codigoCliente)
+            throws SQLException {
+        sistemaprestamo.modelo.Cliente cliente = null;
+        String sqlCliente = "SELECT ClientesApellidos, ClientesNombres, ClientesEstado "
+                + "FROM Cliente.Clientes WHERE ClientesCodigo = ?";
+        try (PreparedStatement sentencia = conexion.prepareStatement(sqlCliente)) {
+            sentencia.setString(1, codigoCliente);
+            try (ResultSet resultado = sentencia.executeQuery()) {
+                if (resultado.next()) {
+                    cliente = new sistemaprestamo.modelo.Cliente();
+                    cliente.setCodigo(codigoCliente);
+                    cliente.setApellidos(resultado.getString("ClientesApellidos"));
+                    cliente.setNombres(resultado.getString("ClientesNombres"));
+                    cliente.setEstado(resultado.getString("ClientesEstado").trim());
+                }
+            }
+        }
+
+        List<Prestamo> prestamos = new ArrayList<>();
+        String sqlPrestamos = "SELECT e.EstadosPrestamoNombre "
+                + "FROM Prestamo.Prestamos AS p "
+                + "INNER JOIN Prestamo.EstadosPrestamo AS e "
+                + "ON e.EstadosPrestamoCodigo = p.EstadosPrestamoCodigo "
+                + "WHERE p.ClientesCodigo = ?";
+        try (PreparedStatement sentencia = conexion.prepareStatement(sqlPrestamos)) {
+            sentencia.setString(1, codigoCliente);
+            try (ResultSet resultado = sentencia.executeQuery()) {
+                while (resultado.next()) {
+                    Prestamo anterior = new Prestamo();
+                    anterior.setEstadoNombre(resultado.getString("EstadosPrestamoNombre"));
+                    prestamos.add(anterior);
+                }
+            }
+        }
+        new Prestamo().validarCliente(cliente, prestamos);
     }
 
     public List<Prestamo> listar() throws SQLException {

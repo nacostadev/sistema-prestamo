@@ -89,6 +89,16 @@ public class PrestamoController {
         return false;
     }
 
+    /** Devuelve la advertencia que corresponde al cliente seleccionado, o null si es apto. */
+    public String consultarRestriccionCliente(String codigoCliente) throws SQLException {
+        Cliente cliente = clienteDAO.buscarPorCodigo(codigoCliente);
+        if (cliente == null) {
+            return "El cliente no existe en el sistema.";
+        }
+        return Prestamo.obtenerRestriccionCliente(cliente,
+                prestamoDAO.listarPorCliente(codigoCliente));
+    }
+
     // ---- Registro (CA-02) ----
 
     /**
@@ -120,7 +130,7 @@ public class PrestamoController {
     /** HU-02 CA-01 / HU-03 CA-01: muestra el formulario con los datos de la base de datos. */
     public void iniciar() {
         try {
-            cargarClientesActivos();
+            cargarTodosLosClientes();
             tiposPrestamo = prestamoDAO.listarTiposPrestamo();
             vista.cargarTiposPrestamo(convertirTipos(tiposPrestamo));
             vista.cargarModalidadesPago(catalogoDAO.listarModalidadesPago());
@@ -170,10 +180,10 @@ public class PrestamoController {
         }
     }
 
-    /** Recarga los clientes habilitados sin reiniciar el módulo ni borrar otros campos. */
+    /** Recarga todos los clientes sin reiniciar el módulo ni borrar otros campos. */
     public void refrescarClientes() {
         try {
-            cargarClientesActivos();
+            cargarTodosLosClientes();
         } catch (SQLException excepcion) {
             vista.mostrarMensaje("No se pudo actualizar la lista de clientes: " + excepcion.getMessage(),
                     "Error de base de datos", JOptionPane.ERROR_MESSAGE);
@@ -181,10 +191,10 @@ public class PrestamoController {
     }
 
     // ------------------------------------------------------------------
-    private void cargarClientesActivos() throws SQLException {
+    private void cargarTodosLosClientes() throws SQLException {
         List<ItemCatalogo> clientes = new ArrayList<>();
-        // RN-01 y RN-06: el filtro se realiza en persistencia, no en la vista.
-        for (Cliente cliente : clienteDAO.listarHabilitadosParaPrestamo()) {
+        // Mostrar activos e inactivos; el modelo determina si están habilitados.
+        for (Cliente cliente : clienteDAO.listar("")) {
             clientes.add(new ItemCatalogo(cliente.getCodigo(), cliente.getCodigo() + " - "
                     + cliente.getApellidos() + ", " + cliente.getNombres()));
         }

@@ -262,23 +262,53 @@ public class Prestamo {
     }
 
     /**
-     * HU-02 RN-01 y RN-06: el cliente debe estar registrado y activo, y no puede tener
-     * préstamos en estado de morosidad o incumplimiento.
-     *
-     * @param prestamosDelCliente todos los préstamos que ya tiene el cliente
+     * Situación crediticia del cliente para el registro de préstamos.
+     * Retorna null si puede solicitar un préstamo o el motivo de la restricción.
+     * Se priorizan las advertencias de incumplimiento y morosidad sobre la de Vigente.
+     * Un préstamo finalizado no bloquea una nueva solicitud.
      */
-    public void validarCliente(Cliente cliente, List<Prestamo> prestamosDelCliente) {
+    public static String obtenerRestriccionCliente(Cliente cliente, List<Prestamo> prestamosDelCliente) {
         if (cliente == null) {
-            throw new IllegalArgumentException("El cliente no existe en el sistema.");
+            return "El cliente no existe en el sistema.";
         }
+        String nombre = cliente.getApellidos() + ", " + cliente.getNombres();
         if (!cliente.estaActivo()) {
-            throw new IllegalArgumentException(nombreDe(cliente) + " se encuentra inactivo en el sistema.");
+            return "El cliente " + nombre + " se encuentra inactivo en el sistema. "
+                    + "No se permite registrar un nuevo préstamo.";
         }
+        boolean tieneMorosidad = false;
+        boolean tieneIncumplimiento = false;
+        boolean tieneVigente = false;
         for (Prestamo existente : prestamosDelCliente) {
-            if (existente.estaEnMora()) {
-                throw new IllegalArgumentException(nombreDe(cliente) + " tiene préstamos en estado de morosidad "
-                        + "o incumplimiento.");
+            String estado = existente.getEstadoNombre();
+            if (ESTADO_INCUMPLIMIENTO.equals(estado)) {
+                tieneIncumplimiento = true;
+            } else if (ESTADO_MOROSO.equals(estado)) {
+                tieneMorosidad = true;
+            } else if (ESTADO_VIGENTE.equals(estado)) {
+                tieneVigente = true;
             }
+        }
+        if (tieneIncumplimiento) {
+            return "El cliente " + nombre + " presenta un préstamo en estado de incumplimiento. "
+                    + "No se permite registrar un nuevo préstamo.";
+        }
+        if (tieneMorosidad) {
+            return "El cliente " + nombre + " presenta un préstamo en estado de morosidad. "
+                    + "No se permite registrar un nuevo préstamo.";
+        }
+        if (tieneVigente) {
+            return "El cliente " + nombre + " ya tiene un préstamo vigente. "
+                    + "Debe cancelarlo antes de solicitar uno nuevo.";
+        }
+        return null;
+    }
+
+    /** Verifica las restricciones de selección y de registro con la misma regla del modelo. */
+    public void validarCliente(Cliente cliente, List<Prestamo> prestamosDelCliente) {
+        String restriccion = obtenerRestriccionCliente(cliente, prestamosDelCliente);
+        if (restriccion != null) {
+            throw new IllegalArgumentException(restriccion);
         }
     }
 
@@ -327,10 +357,6 @@ public class Prestamo {
 
     public boolean teaCumple(TipoPrestamo tipo) {
         return tea.compareTo(tipo.getTasaMinima()) >= 0 && tea.compareTo(tipo.getTasaMaxima()) <= 0;
-    }
-
-    private String nombreDe(Cliente cliente) {
-        return cliente.getApellidos() + ", " + cliente.getNombres();
     }
 
     private void exigirTipo(TipoPrestamo tipo) {

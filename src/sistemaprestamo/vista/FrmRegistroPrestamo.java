@@ -5,8 +5,10 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
+import javax.swing.SwingWorker;
 import sistemaprestamo.controlador.PrestamoController;
 import sistemaprestamo.modelo.ItemCatalogo;
 import sistemaprestamo.modelo.Prestamo;
@@ -24,6 +26,8 @@ public class FrmRegistroPrestamo extends javax.swing.JFrame {
     private static final ItemCatalogo SIN_GARANTIA = new ItemCatalogo("", "<<Sin garantía>>");
 
     private PrestamoController controlador;
+    private boolean cargandoClientes = false;
+    private long versionVerificacion = 0;
 
     public FrmRegistroPrestamo() {
         Usuario.validarSesionAutorizada(Sesion.getUsuario());
@@ -42,6 +46,8 @@ public class FrmRegistroPrestamo extends javax.swing.JFrame {
         javax.swing.JPanel contenedor = new javax.swing.JPanel(new java.awt.BorderLayout());
         contenedor.add(scroll, java.awt.BorderLayout.CENTER);
         setContentPane(contenedor);
+        // Registrar el listener fuera de initComponents() para respetar el editor visual de NetBeans.
+        cboCliente.addActionListener(evento -> comprobarClienteSeleccionado());
         revalidate();
         repaint();
     }
@@ -234,17 +240,70 @@ public class FrmRegistroPrestamo extends javax.swing.JFrame {
     }
 
     public void cargarClientes(List<ItemCatalogo> clientes) {
-        // Mantener la elección actual si todavía corresponde a un cliente activo.
+        // Mantener la selección al volver del módulo Gestionar Clientes.
         String codigoAnterior = codigoSeleccionado(cboCliente);
-        cargarCombo(cboCliente, clientes, SELECCIONAR);
-        if (!codigoAnterior.isEmpty()) {
-            for (int i = 1; i < cboCliente.getItemCount(); i++) {
-                if (codigoAnterior.equals(cboCliente.getItemAt(i).getCodigo())) {
-                    cboCliente.setSelectedIndex(i);
-                    break;
+        cargandoClientes = true;
+        try {
+            cargarCombo(cboCliente, clientes, SELECCIONAR);
+            if (!codigoAnterior.isEmpty()) {
+                for (int i = 1; i < cboCliente.getItemCount(); i++) {
+                    if (codigoAnterior.equals(cboCliente.getItemAt(i).getCodigo())) {
+                        cboCliente.setSelectedIndex(i);
+                        break;
+                    }
                 }
             }
+        } finally {
+            cargandoClientes = false;
         }
+        comprobarClienteSeleccionado();
+    }
+
+    /** Verifica sin bloquear la ventana y avisa inmediatamente al seleccionar un cliente. */
+    private void comprobarClienteSeleccionado() {
+        if (cargandoClientes || controlador == null) {
+            return;
+        }
+        final long versionActual = ++versionVerificacion;
+        final String codigo = codigoSeleccionado(cboCliente);
+        if (codigo.isEmpty()) {
+            btnRegistrar.setEnabled(true);  // La validación de campos obligatorios sigue activa.
+            return;
+        }
+        // Evita registrar mientras se consulta la situación crediticia en SQL Server.
+        btnRegistrar.setEnabled(false);
+        new SwingWorker<String, Void>() {
+            @Override
+            protected String doInBackground() throws Exception {
+                return controlador.consultarRestriccionCliente(codigo);
+            }
+
+            @Override
+            protected void done() {
+                // Si el usuario cambió de cliente, esta respuesta ya no corresponde.
+                if (versionActual != versionVerificacion
+                        || !codigo.equals(codigoSeleccionado(cboCliente))) {
+                    return;
+                }
+                try {
+                    String advertencia = get();
+                    btnRegistrar.setEnabled(advertencia == null);
+                    if (advertencia != null) {
+                        mostrarMensaje(advertencia, "Restricción del cliente", JOptionPane.WARNING_MESSAGE);
+                    }
+                } catch (InterruptedException excepcion) {
+                    Thread.currentThread().interrupt();
+                    btnRegistrar.setEnabled(false);
+                    mostrarMensaje("La validación del cliente fue interrumpida.",
+                            "Validación", JOptionPane.ERROR_MESSAGE);
+                } catch (ExecutionException excepcion) {
+                    btnRegistrar.setEnabled(false);
+                    mostrarMensaje("No se pudo verificar la situación crediticia del cliente. "
+                                    + "Intente nuevamente o seleccione el cliente otra vez.",
+                            "Error de consulta", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }.execute();
     }
 
     public void cargarTiposPrestamo(List<ItemCatalogo> tipos) {
