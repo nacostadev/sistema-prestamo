@@ -7,7 +7,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import sistemaprestamo.modelo.Cliente;
 
 
@@ -22,6 +24,15 @@ public class ClienteDAO {
 
     private static final String SQL_ESTADOS_PRESTAMOS =
             "SELECT EstadosPrestamoCodigo FROM Prestamo.Prestamos WHERE ClientesCodigo = ?";
+
+    // RN-06 (HU-02): solo excluye préstamos en morosidad o incumplimiento.
+    // Se consulta de forma global para evitar una consulta por cada cliente (N+1).
+    private static final String SQL_CLIENTES_CON_MOROSIDAD =
+            "SELECT DISTINCT p.ClientesCodigo "
+            + "FROM Prestamo.Prestamos AS p "
+            + "INNER JOIN Prestamo.EstadosPrestamo AS e "
+            + "ON e.EstadosPrestamoCodigo = p.EstadosPrestamoCodigo "
+            + "WHERE e.EstadosPrestamoNombre IN (N'Moroso', N'Incumplimiento')";
 
     private static final int ERROR_VALOR_DUPLICADO = 2627;
 
@@ -64,6 +75,33 @@ public class ClienteDAO {
 
     public List<Cliente> listar(String busqueda) throws SQLException {
         return consultar(null, busqueda);
+    }
+
+    /**
+     * Clientes habilitados para registrar préstamos (HU-02 RN-01 y RN-06).
+     * No modifica listar(...), que sigue devolviendo a todos en Gestionar Clientes.
+     * Los clientes con préstamos Vigentes y al día siguen estando habilitados.
+     */
+    public List<Cliente> listarHabilitadosParaPrestamo() throws SQLException {
+        // Reutilizar el procedimiento de clientes existente y su mapeo.
+        List<Cliente> registrados = listar("");
+        Set<String> clientesConMora = new HashSet<>();
+
+        try (Connection conexion = Conexion.getConnection();
+             PreparedStatement sentencia = conexion.prepareStatement(SQL_CLIENTES_CON_MOROSIDAD);
+             ResultSet resultado = sentencia.executeQuery()) {
+            while (resultado.next()) {
+                clientesConMora.add(resultado.getString("ClientesCodigo").trim());
+            }
+        }
+
+        List<Cliente> habilitados = new ArrayList<>();
+        for (Cliente cliente : registrados) {
+            if (cliente.estaActivo() && !clientesConMora.contains(cliente.getCodigo())) {
+                habilitados.add(cliente);
+            }
+        }
+        return habilitados;
     }
 
     public Cliente buscarPorCodigo(String codigoCliente) throws SQLException {

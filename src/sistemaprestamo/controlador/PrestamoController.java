@@ -170,14 +170,23 @@ public class PrestamoController {
         }
     }
 
+    /** Recarga los clientes habilitados sin reiniciar el módulo ni borrar otros campos. */
+    public void refrescarClientes() {
+        try {
+            cargarClientesActivos();
+        } catch (SQLException excepcion) {
+            vista.mostrarMensaje("No se pudo actualizar la lista de clientes: " + excepcion.getMessage(),
+                    "Error de base de datos", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
     // ------------------------------------------------------------------
     private void cargarClientesActivos() throws SQLException {
         List<ItemCatalogo> clientes = new ArrayList<>();
-        for (Cliente cliente : clienteDAO.listar("")) {
-            if (cliente.estaActivo()) {                                        // RN-01
-                clientes.add(new ItemCatalogo(cliente.getCodigo(), cliente.getCodigo() + " - "
-                        + cliente.getApellidos() + ", " + cliente.getNombres()));
-            }
+        // RN-01 y RN-06: el filtro se realiza en persistencia, no en la vista.
+        for (Cliente cliente : clienteDAO.listarHabilitadosParaPrestamo()) {
+            clientes.add(new ItemCatalogo(cliente.getCodigo(), cliente.getCodigo() + " - "
+                    + cliente.getApellidos() + ", " + cliente.getNombres()));
         }
         vista.cargarClientes(clientes);
     }
