@@ -33,6 +33,7 @@ public class MenuController {
     private final FrmMenuOpcion vista;
     private final Map<String, Supplier<JFrame>> formularios = new LinkedHashMap<>();
     private final Set<String> abiertos = new HashSet<>();
+    private FrmRegistroPrestamo formularioPrestamo;
 
     public MenuController(FrmMenuOpcion vista) {
         this.vista = vista;
@@ -63,6 +64,12 @@ public class MenuController {
                 envoltorio.add(frm.getContentPane(), BorderLayout.CENTER);
                 vista.agregarPanel(clave, envoltorio);
                 abiertos.add(clave);
+                if (PRESTAMO.equals(clave)) {
+                    formularioPrestamo = (FrmRegistroPrestamo) frm;
+                }
+            } else if (PRESTAMO.equals(clave) && formularioPrestamo != null) {
+                // Si el módulo ya estaba abierto, obtener de nuevo los clientes del SQL Server.
+                formularioPrestamo.refrescarClientes();
             }
             vista.mostrarPanel(clave);
             vista.marcarActivo(clave);

@@ -228,8 +228,23 @@ public class FrmRegistroPrestamo extends javax.swing.JFrame {
     // Métodos que usa PrestamoController
     // ------------------------------------------------------------------
 
+    /** Solicita los clientes recientes cuando el usuario vuelve al módulo de préstamos. */
+    public void refrescarClientes() {
+        controlador.refrescarClientes();
+    }
+
     public void cargarClientes(List<ItemCatalogo> clientes) {
+        // Mantener la elección actual si todavía corresponde a un cliente activo.
+        String codigoAnterior = codigoSeleccionado(cboCliente);
         cargarCombo(cboCliente, clientes, SELECCIONAR);
+        if (!codigoAnterior.isEmpty()) {
+            for (int i = 1; i < cboCliente.getItemCount(); i++) {
+                if (codigoAnterior.equals(cboCliente.getItemAt(i).getCodigo())) {
+                    cboCliente.setSelectedIndex(i);
+                    break;
+                }
+            }
+        }
     }
 
     public void cargarTiposPrestamo(List<ItemCatalogo> tipos) {
