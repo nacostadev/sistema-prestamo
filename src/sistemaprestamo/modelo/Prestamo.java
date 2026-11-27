@@ -15,6 +15,8 @@ public class Prestamo {
 
     private static final MathContext PRECISION = new MathContext(30, RoundingMode.HALF_UP);
     private static final int ESCALA_MONEDA = 2;
+    /** RN-08 (propuesta): días que se permite programar un desembolso nuevo. */
+    public static final int MAX_DIAS_PROGRAMACION_DESEMBOLSO = 30;
     public static final String MENSAJE_PLAZO_ENTERO =
             "El plazo debe ser un número entero positivo de cuotas (sin decimales). No se generó el cronograma.";
 
@@ -245,6 +247,9 @@ public class Prestamo {
                     "Complete los campos obligatorios: " + String.join(", ", faltantes) + ".");
         }
 
+        // RN-08: evitar registrar desembolsos con fechas pasadas o demasiado futuras.
+        validarFechaDesembolso();
+
         if (!tienePlazoEntero()) {
             throw new IllegalArgumentException(MENSAJE_PLAZO_ENTERO);
         }
@@ -259,6 +264,32 @@ public class Prestamo {
 
         montoSolicitado = montoSolicitado.setScale(2, RoundingMode.HALF_UP);
         tea = tea.setScale(4, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * RN-08 (propuesta): fecha del día o hasta 30 días después.
+     * Se calcula a partir de la fecha de ejecución; no se fija al año 2026.
+     */
+    public void validarFechaDesembolso() {
+        validarFechaDesembolso(LocalDate.now());
+    }
+
+    /** Permite comprobar fechas límite usando una fecha actual fija en las pruebas. */
+    void validarFechaDesembolso(LocalDate fechaActual) {
+        if (fechaDesembolso == null) {
+            throw new IllegalArgumentException(
+                    "Complete los campos obligatorios: fecha de desembolso.");
+        }
+        if (fechaDesembolso.isBefore(fechaActual)) {
+            throw new IllegalArgumentException(
+                    "La fecha de desembolso no puede ser anterior a la fecha actual.");
+        }
+        if (fechaDesembolso.isAfter(fechaActual.plusDays(MAX_DIAS_PROGRAMACION_DESEMBOLSO))) {
+            throw new IllegalArgumentException(
+                    "La fecha de desembolso no puede superar los "
+                    + MAX_DIAS_PROGRAMACION_DESEMBOLSO
+                    + " días posteriores a la fecha actual.");
+        }
     }
 
     /**
