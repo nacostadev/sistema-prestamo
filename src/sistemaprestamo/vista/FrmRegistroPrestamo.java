@@ -48,6 +48,8 @@ public class FrmRegistroPrestamo extends javax.swing.JFrame {
         setContentPane(contenedor);
         // Registrar el listener fuera de initComponents() para respetar el editor visual de NetBeans.
         cboCliente.addActionListener(evento -> comprobarClienteSeleccionado());
+        dcFechaDesembolso.setToolTipText("Fecha permitida: hoy o hasta "
+                + Prestamo.MAX_DIAS_PROGRAMACION_DESEMBOLSO + " días después.");
         revalidate();
         repaint();
     }

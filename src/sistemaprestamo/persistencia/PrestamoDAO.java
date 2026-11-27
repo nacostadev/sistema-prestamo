@@ -49,6 +49,8 @@ public class PrestamoDAO {
 
 
     public String registrar(Prestamo prestamo) throws SQLException {
+        // RN-08: también bloquear inserciones que no pasen por PrestamoController.
+        prestamo.validarFechaDesembolso();
 
         try (Connection conexion = Conexion.getConnection()) {
 
@@ -99,6 +101,9 @@ public class PrestamoDAO {
                         "PR",
                         4
                 );
+
+                // RN-08: última verificación antes del INSERT, también si cambió el día.
+                prestamo.validarFechaDesembolso();
 
                 try (PreparedStatement sentencia =
                         conexion.prepareStatement(SQL_INSERTAR)) {
